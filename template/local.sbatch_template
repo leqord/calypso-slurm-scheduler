@@ -2,8 +2,8 @@
 #SBATCH --partition=LocalQ
 #SBATCH --time=48:00:00
 #SBATCH --ntasks=2
-#SBATCH --output=test/test_cal.out
-#SBATCH --error=test/test_cal.err
+#SBATCH --output=task_$SLURM_JOB_ID.out
+#SBATCH --error=task_$SLURM_JOB_ID.err
 
 
 $TASK_SCRIPT --config ./config.json --slurmid $SLURM_JOB_ID

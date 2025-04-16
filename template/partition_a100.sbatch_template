@@ -8,13 +8,12 @@
 #SBATCH --error={job_name}_%j.err
 
 #!/bin/bash
-#SBATCH --mail-user=levenetsmihail@yandex.ru
-#SBATCH --mail-type=ALL
 #SBATCH --cpus-per-gpu=2
 #SBATCH --gres=gpu:1
 #SBATCH --time=0-48:00:00
-#SBATCH --job-name=2D_ZnO
 #SBATCH --partition=intel-a100-pci4 
+#SBATCH --output=test/task_$SLURM_JOB_ID.out
+#SBATCH --error=test/task_$SLURM_JOB_ID.err
 
 
 TOTAL_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
@@ -30,6 +29,5 @@ export OMP_STACKSIZE=512m
 source /home/achibisov/vasp/vasp643-nvidia/setenv.sh
 
 
-mpirun -np $TOTAL_GPUS /home/achibisov/vasp/vasp643-nvidia/bin/vasp_std > vasp.log 2> errors.log
+#mpirun -np $TOTAL_GPUS /home/achibisov/vasp/vasp643-nvidia/bin/vasp_std > vasp.log 2> errors.log
 
-$SLURM_JOB_ID
