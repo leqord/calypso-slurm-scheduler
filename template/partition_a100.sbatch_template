@@ -3,8 +3,8 @@
 #SBATCH --gres=gpu:1
 #SBATCH --time=0-48:00:00
 #SBATCH --partition=intel-a100-pci4 
-#SBATCH --output=test/task_$SLURM_JOB_ID.out
-#SBATCH --error=test/task_$SLURM_JOB_ID.err
+#SBATCH --output=test/task.out
+#SBATCH --error=test/task.err
 
 
 TOTAL_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
