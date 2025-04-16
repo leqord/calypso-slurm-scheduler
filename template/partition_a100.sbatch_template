@@ -1,13 +1,4 @@
 #!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --partition={partition}
-#SBATCH --time={time}
-#SBATCH --nodes={nodes}
-#SBATCH --ntasks={ntasks}
-#SBATCH --output={job_name}_%j.out
-#SBATCH --error={job_name}_%j.err
-
-#!/bin/bash
 #SBATCH --cpus-per-gpu=2
 #SBATCH --gres=gpu:1
 #SBATCH --time=0-48:00:00

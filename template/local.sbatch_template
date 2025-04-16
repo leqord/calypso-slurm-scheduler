@@ -6,4 +6,4 @@
 #SBATCH --error=task_$SLURM_JOB_ID.err
 
 
-$TASK_SCRIPT --config ./config.json --slurmid $SLURM_JOB_ID
+$TASK_SCRIPT --config ./config.json

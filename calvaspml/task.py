@@ -119,7 +119,6 @@ def load_status(status_file: Path) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Верхнеуровневый скрипт для последовательного запуска VaspJob задач с изоляцией этапов")
     parser.add_argument("--config", required=True, help="Путь к конфигурационному файлу (JSON)")
-    parser.add_argument("--slurmid", required=True, help="Идентификатор текущего задания Slurm")
     args = parser.parse_args()
 
 
@@ -141,8 +140,6 @@ def main():
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
 
-
-    slurmid = str(args.slurmid)
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s [%(levelname)s] %(message)s",
