@@ -37,9 +37,9 @@ def submit_job(template_path: Path, cwd: Path, job_name: str) -> int:
             capture_output=True, 
             text=True, 
             check=True,
-            shell=True,
+            #shell=True,
             cwd=cwd,
-            executable='/bin/bash'
+            #executable='/bin/bash'
         )
         output = result.stdout.strip()
         parts = output.split()
@@ -75,8 +75,8 @@ def get_job_status(job_id):
             capture_output=True, 
             text=True, 
             check=True,
-            shell=True,
-            executable='/bin/bash'
+            #shell=True,
+            #executable='/bin/bash'
         )
         output = result.stdout.strip()
 
