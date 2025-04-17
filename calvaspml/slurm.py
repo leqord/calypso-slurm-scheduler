@@ -70,7 +70,7 @@ def get_job_status(job_id):
     """
     try:
         result = subprocess.run(
-            ["scontrol", "show", "job", str(job_id)],
+            ["scontrol show job {job_id}"],
             capture_output=True, text=True, check=True,
             executable='/bin/bash'
         )
