@@ -31,7 +31,7 @@ def submit_job(template_path: Path, cwd: Path, job_name: str) -> int:
         tmp_file_path = tmp_file.name
 
     try:
-        params = [f"sbatch --job-name={job_name} {tmp_file_path}"]
+        params = f"sbatch --job-name={job_name} {tmp_file_path}"
         result = subprocess.run(
             params,
             capture_output=True, 
@@ -48,7 +48,7 @@ def submit_job(template_path: Path, cwd: Path, job_name: str) -> int:
         else:
             raise SlurmSubmissionError(f"Не удалось разобрать вывод sbatch: {output}")
     except subprocess.CalledProcessError as e:
-        raise SlurmSubmissionError(f"Ошибка при отправке задания ({' '.join(params)}):\n {e.stderr}") from e
+        raise SlurmSubmissionError(f"Ошибка при отправке задания ({params}):\n {e.stderr}") from e
     finally:
         os.remove(tmp_file_path)
 
@@ -70,7 +70,7 @@ def get_job_status(job_id):
     """
     try:
         result = subprocess.run(
-            ["scontrol show job {job_id}"],
+            "scontrol show job {job_id}",
             capture_output=True, text=True, check=True,
             executable='/bin/bash'
         )
