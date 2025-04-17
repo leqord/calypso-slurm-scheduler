@@ -41,7 +41,7 @@ def submit_job(template_path: Path, cwd: Path, job_name: str) -> int:
             text=True, 
             check=True,
             cwd=cwd,
-            executable='/bin/bash'
+            #executable='/bin/bash'
         )
         output = result.stdout.strip()
         parts = output.split()
