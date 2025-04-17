@@ -95,7 +95,7 @@ class CalypsoScheduler():
     def execute_calypso(self):
         self.logger.debug(f"Запуск calypso {self.calypso_exe} в {self.calypso_workdir}")
 
-        result = subprocess.run(str(self.calypso_exe), shell=True, cwd=self.calypso_workdir)
+        result = subprocess.run(str(self.calypso_exe), shell=True, cwd=self.calypso_workdir, executable='/bin/bash')
         if result.returncode != 0:
             raise CalypsoError(f"Ошибка выполнения calypso.x\nКод: {result.returncode}\nОшибка:\n{result.stderr}\nВывод:\n{result.stdout}")
         return None
