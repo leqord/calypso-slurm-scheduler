@@ -31,17 +31,14 @@ def submit_job(template_path: Path, cwd: Path, job_name: str) -> int:
         tmp_file_path = tmp_file.name
 
     try:
-        params = ["sbatch",
-             f"--job-name={job_name}",
-             tmp_file_path,
-             ]
+        params = [f"sbatch --job-name={job_name} {tmp_file_path}"]
         result = subprocess.run(
             params,
             capture_output=True, 
             text=True, 
             check=True,
             cwd=cwd,
-            #executable='/bin/bash'
+            executable='/bin/bash'
         )
         output = result.stdout.strip()
         parts = output.split()
