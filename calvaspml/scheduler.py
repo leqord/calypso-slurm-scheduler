@@ -264,7 +264,6 @@ class CalypsoScheduler():
 
         # TODO: ПОЧЕМУ-ТО БЫЛО СОЗДАНО 3 ДУБЛИРУЮЩИХ ЗАДАЧИ
         while True:
-            self.logger.info("Запуск Calypso")
             self.logger.debug(f"Проверка, не завершена ли уже работа с текущим поколением")
 
             current_generation_number = self.check_calypso_generation()
@@ -303,6 +302,7 @@ class CalypsoScheduler():
                     self.prepare_task_from_poscars(poscars=poscars, task_id=str(current_generation_number))
                     continue
 
+            self.logger.info("Запуск Calypso")
             self.execute_calypso()
             poscars = self.get_calypso_poscars()
             updated_generation_number = self.check_calypso_generation()
