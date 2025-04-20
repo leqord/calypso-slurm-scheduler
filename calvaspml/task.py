@@ -95,7 +95,8 @@ class VaspJob:
                                         text=True, 
                                         check=True,
                                         cwd=step_dir,
-                                        executable='/bin/bash')
+                                        #executable='/bin/bash'
+                                        )
             
             if result.returncode != 0:
                 error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path}"
