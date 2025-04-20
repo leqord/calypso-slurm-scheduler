@@ -91,7 +91,6 @@ class VaspJob:
                 result = subprocess.run(self.task_cmd, 
                                         stdout=logfile, 
                                         stderr=subprocess.STDOUT, 
-                                        capture_output=True,
                                         text=True, 
                                         check=True,
                                         cwd=step_dir,
