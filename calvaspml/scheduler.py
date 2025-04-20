@@ -192,13 +192,21 @@ class CalypsoScheduler():
             if not contcar_source.exists():
                 raise FileNotFoundError(f"Файл {contcar_source} не найден")
             
+            poscar_source = job_folder / "POSCAR_ORIGINAL"
+            if not contcar_source.exists():
+                raise FileNotFoundError(f"Файл {poscar_source} не найден")
+            
             target_outcar = self.calypso_workdir / f"OUTCAR_{job_number}"
             target_contcar = self.calypso_workdir / f"CONTCAR_{job_number}"
+            target_poscar = self.calypso_workdir / f"POSCAR_{job_number}"
             
             self.logger.debug(f" {outcar_source} -> {target_outcar}")
             shutil.copy(outcar_source, target_outcar)
 
             self.logger.debug(f"{contcar_source} -> {target_contcar}")
+            shutil.copy(contcar_source, target_contcar)
+
+            self.logger.debug(f"{poscar_source} -> {target_poscar}")
             shutil.copy(contcar_source, target_contcar)
 
         return None
