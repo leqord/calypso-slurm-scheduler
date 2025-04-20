@@ -88,7 +88,7 @@ class VaspJob:
             log_file_path = step_dir / f"vasp_step_{i}.log"
             with open(log_file_path, "w") as logfile:
                 self.logger.info(f"Этап {i}: запуск команды '{self.task_cmd}' с cwd={step_dir}")
-                result = subprocess.run(self.task_cmd, shell=True, stdout=logfile, stderr=subprocess.STDOUT, cwd=step_dir, executable='/bin/bash')
+                result = subprocess.run(self.task_cmd, stdout=logfile, stderr=subprocess.STDOUT, cwd=step_dir, executable='/bin/bash')
             
             if result.returncode != 0:
                 error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path}"
