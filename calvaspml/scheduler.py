@@ -195,7 +195,10 @@ class CalypsoScheduler():
             target_outcar = self.calypso_workdir / f"OUTCAR_{job_number}"
             target_contcar = self.calypso_workdir / f"CONTCAR_{job_number}"
             
+            self.logger.debug(f" {outcar_source} -> {target_outcar}")
             shutil.copy(outcar_source, target_outcar)
+
+            self.logger.debug(f"{contcar_source} -> {target_contcar}")
             shutil.copy(contcar_source, target_contcar)
 
         return None
@@ -295,6 +298,7 @@ class CalypsoScheduler():
                         time.sleep(self.loop_sleep_seconds)
                         continue
 
+                    self.logger.debug(f"Копирую выходые файлы расчётов в папку Calypso")
                     self.copy_output_from_task_from_id(str(current_generation_number))
                 else:
                     self.logger.info(f"Подготовка задния для поколения {current_generation_number}")
