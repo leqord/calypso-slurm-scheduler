@@ -2,7 +2,7 @@
 
 ## Цикл работы
 
-Планировщик обеспечивает цикл работы Calypso:
+Планировщик (`scheduler.py`) обеспечивает цикл работы Calypso:
 
 1. Запуск исполняемого файла `calypso.x` в рабочей папке Calypso
 2. Проверка, изменился ли файл `step` и появились ли новые структуры `POSCAR_*`
@@ -11,3 +11,81 @@
 5. Проверяется состояние отправленной задачи для расчёта поколения структур. Если она всё ещё в очереди (в ожидании или работает), то планировщик ожидает, если нет, то проверяет результаты. Если все нужные файлы присутствуют в директории последнего этапа расчёта для каждой структуры (`CONTCAR`, `OUTCAR`) и запуск VASP происходил без ошибок, то выходные файлы задания (`CONTCAR`, `OUTCAR`) копируются обратно в директорию calypso как `CONTCAR_M` и `OUTCAR_M`. Если же нет, то задание запускается заново, но для ужё обработанных структур повторно расчёт не запускается, только для тех, которые не были начаты или их расчёт завершился с ошибкой.
 
 Планировщик допускает прекращение работы в любой момент и повторный запуск для продолжения работы. Если возникают проблемы или ошибки с расчётами, которые нужно исправить, корректируя `INCAR` или другие параметры, то можно остановить его работу, внести изменения и снова запустить.
+
+
+## Установка
+
+В первую очередь нужно установить Calypso:
+1. Распаковать архив с пакетом
+2. Установить conda и создать окружения для работы calypso и `cak.py`:
+```Bash
+mkdir -p ~/miniconda3 && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3 && rm -rf ~/miniconda3/miniconda.sh && ~/miniconda3/bin/conda init bash && source ~/.bashrc && conda create -n "calypso" python=3.8 && conda install --name calypso matplotlib spglib pymatgen
+```
+3. Клонировать репозиторий gir с планировщиком куда-либо:
+```Bash
+git clone  https://github.com/leqord/calypso-slurm-scheduler
+```
+
+## Подготовка
+1. Создать и подготовить директорию для планировщика в рамках текущей работы, например `~/calypso/Al2O3`.
+2. Внутри неё нужно подготовить поддиректорию, которая будет рабочей директорией для запуска `calypso` (например, `~/calypso/Al2O3/calypso`), и поместить туда `input.dat`.
+3. Затем нужно подготовить директорию с общими входными файлами VASP: `POTCAR` и `INCAR_*`. Например, `~/calypso/Al2O3/input`.
+4. Подготовить шаблон для запуска sbatch-задания slurm, взяв за за основу примеры в папке `template` репозитория или такой для запуска на кластере `intel`, `intel.sbatch_template`:
+```Bash
+#!/bin/bash
+#SBATCH --partition=intel
+#SBATCH --time=48:00:00
+#SBATCH --ntasks=64
+#SBATCH --output=task.out
+#SBATCH --error=task.err
+
+$TASK_SCRIPT --config ./config.json
+
+sleep 3
+```
+Редактировать необходимо параметры, определяющие выделенные ресурсы, тогда как строка запуска `$TASK_SCRIPT --config ./config.json` обязательно должна присутствовать.
+5. Подготовить файл отдельного запуска VASP `job.sh`, не забыв установить флаг исполняемости (`chmod u+x ./job.sh`), например, такой (обратите внимание на абсолютные пути и имя пользователя):
+```Bash
+#!/bin/bash
+
+export OMP_NUM_THREADS=1
+export OMP_PLACES=cores
+export OMP_PROC_BIND=close
+export OMP_STACKSIZE=512m
+
+source /home/user/intel/oneapi/setvars.sh 
+
+mpirun /home/user/vasp/vasp643-intel/bin/vasp_std
+```
+6. И, наконец, подготовить скрипт запуска самого планировщика для удобства на случай перезапуска после ошибок и сбоев (например, `scheduler.sh`):
+```Bash
+#!/bin/bash
+
+~/calypso/calypso-slurm-scheduler/calvaspml/scheduler.py\
+ --command '/home/user/calypso/mock_test/job.sh'\
+ --calypso_exe '/home/mlevenets/calypso/CALYPSO_x64_python3/bin/calypso.x'\
+ --calypso_workdir ./calypso\
+ --tasks_dir ./tasks\
+ --input_dir ./input\
+ --sbatch_template ./intel.sbatch_template
+```
+Обратите внимание, что здесь параметрами указываются пути к вышеописанным файлам конфигурации.
+- `--command` - команда запуска конкретного одного расчёта VASP, исполняется в рамках `sbatch`-скрипта на основе шаблона
+- `--calypso_exe` - путь к исполняемому файлу `calypso.x` (существуеты)
+- `--calypso_workdir` - путь к рабочей директории calyso (существует)
+- `--tasks_dir` - путь к директории, где будут создаваться директории заданий
+- `--input_dir` - путь с общими входными файлами (существуют)
+- `--sbatch_template` - шаблон sbatch-файла для задания
+
+
+Взаимодействие выглядит так:
+```
+scheduler.py -- для каждого поколения --> slurm --> task.sbatch_template --> task.py -- для каждого этапа каждой структуры  --> job.sh
+```
+
+## Запуск
+
+1. Подключиться с помощью tmux к существующей сессии `tmux attach -t calypso` или создать новую `tmux new -s calypso`. 
+2. запустить `scheduler.sh`.
+
+Можно следить за работой скрипта, но от сессии tmux можно спокойно отключиться, работа продолжится, пока не прекратится питание сервера, закрытие терминала не прекратит сессию. Выйти из tmux можно нажав `ctrl+b` и затем `d`. В любое время работу скрипта можно прервать `ctrl+c`. Затем его можно запустить снова, если проблема или ошибка устранена, запустив `scheduler.sh`.
