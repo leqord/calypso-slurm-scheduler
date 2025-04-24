@@ -77,7 +77,6 @@ mpirun /home/user/vasp/vasp643-intel/bin/vasp_std
 - `--input_dir` - путь с общими входными файлами (существуют)
 - `--sbatch_template` - шаблон sbatch-файла для задания
 
-
 Взаимодействие выглядит так:
 ```
 scheduler.py -- для каждого поколения --> slurm --> task.sbatch_template --> task.py -- для каждого этапа каждой структуры  --> job.sh
