@@ -190,7 +190,8 @@ class CalypsoScheduler():
 
             contcar_source = max_step_folder / "CONTCAR"
             if not contcar_source.exists():
-                raise FileNotFoundError(f"Файл {contcar_source} не найден")
+                self.logger.error(f"Отсутствует файл CONTCAR: {contcar_source}, файл НЕ копируется")
+                #raise FileNotFoundError(f"Файл {contcar_source} не найден")
             
             poscar_source = job_folder / "POSCAR_ORIGINAL"
             if not contcar_source.exists():
@@ -207,7 +208,7 @@ class CalypsoScheduler():
             shutil.copy(contcar_source, target_contcar)
 
             self.logger.debug(f"{poscar_source} -> {target_poscar}")
-            shutil.copy(contcar_source, target_contcar)
+            shutil.copy(poscar_source, target_poscar)
 
         return None
 

@@ -97,10 +97,16 @@ class VaspJob:
                                         #executable='/bin/bash'
                                         )
             
+            #outcar_file = step_dir / 
+
             if result.returncode != 0:
-                error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path}"
+                error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path} и OUTCAR"
                 self.logger.error(error_message)
-                raise RuntimeError(error_message)
+
+                outcar_file = step_dir / "OUTCAR"
+
+                if not outcar_file.is_file():
+                    raise RuntimeError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
