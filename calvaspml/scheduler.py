@@ -75,7 +75,7 @@ class CalypsoScheduler():
         self.task_poscars_subfolder_name = "poscars"
         self.task_slurm_status_filename = "slurm.json"
         self.task_job_prefix = "job_"
-        self.loop_sleep_seconds = 10
+        self.loop_sleep_seconds = 60
         self.logger = logger
 
 
