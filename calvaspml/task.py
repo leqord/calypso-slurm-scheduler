@@ -105,8 +105,8 @@ class VaspJob:
 
                 outcar_file = step_dir / "OUTCAR"
 
-                #if not outcar_file.is_file():
-                raise RuntimeError(error_message)
+                if not outcar_file.is_file():
+                    raise RuntimeError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
