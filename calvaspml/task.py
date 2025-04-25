@@ -92,7 +92,7 @@ class VaspJob:
                                         stdout=logfile, 
                                         stderr=subprocess.STDOUT, 
                                         text=True, 
-                                        check=True,
+                                        #check=True,
                                         cwd=step_dir,
                                         #executable='/bin/bash'
                                         )
