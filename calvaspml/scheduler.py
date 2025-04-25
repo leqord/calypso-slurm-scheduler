@@ -189,7 +189,7 @@ class CalypsoScheduler():
             target_poscar = self.calypso_workdir / f"POSCAR_{job_number}"
 
             poscar_source = job_folder / "POSCAR_ORIGINAL"
-            if not contcar_source.exists():
+            if not poscar_source.exists():
                 raise FileNotFoundError(f"Файл {poscar_source} не найден")
 
             self.logger.debug(f"{poscar_source} -> {target_poscar}")
