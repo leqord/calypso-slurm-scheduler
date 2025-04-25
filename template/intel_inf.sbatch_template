@@ -1,0 +1,9 @@
+#!/bin/bash
+#SBATCH --partition=intel
+#SBATCH --time=48:00:00
+#SBATCH --ntasks=64
+#SBATCH --output=task.out
+#SBATCH --error=task.err
+
+
+$TASK_SCRIPT --config ./config.json
