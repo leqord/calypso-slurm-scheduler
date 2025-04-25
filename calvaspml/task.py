@@ -104,7 +104,7 @@ class VaspJob:
                 self.logger.error(error_message)
 
                 # TODO: бросать VaspError такую, что выше этапы прекратятся, но не весь расчёт!
-                raise RuntimeError(error_message)
+                #raise RuntimeError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
