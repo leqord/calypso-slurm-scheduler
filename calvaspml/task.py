@@ -11,6 +11,10 @@ from pathlib import Path
 from datetime import datetime
 
 
+class VaspExecutionError(Exception):
+    pass
+
+
 class VaspJob:
     def __init__(self,
                  workdir: Path,
@@ -104,7 +108,7 @@ class VaspJob:
                 self.logger.error(error_message)
 
                 # TODO: бросать VaspError такую, что выше этапы прекратятся, но не весь расчёт!
-                #raise RuntimeError(error_message)
+                raise VaspExecutionError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
@@ -176,6 +180,14 @@ def main():
         logger.error(f"Не найдено ни одного файла POSCAR_* в {poscar_dir}")
         sys.exit(1)
 
+    status_data["jobs"][job_key] = {
+            "status": "success",
+            "timestamp": "",
+            "workdir": str(job_workdir),
+            "error": "",
+            "warning": "",
+        }
+
     for poscar_file in poscar_files:
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
         job_key = poscar_file.name 
@@ -198,25 +210,17 @@ def main():
                           logger=logger,
                           task_cmd=vasp_cmd)
             job.run()
+        except VaspExecutionError as e:
+            logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
+            status_data["jobs"][job_key]["warning"] = str(e)
         except Exception as e:
             logger.error(f"Задача {job_key} завершилась с ошибкой: {e}")
-            status_data["jobs"][job_key] = {
-                "status": "failed",
-                "timestamp": datetime.now().isoformat(),
-                "workdir": str(job_workdir),
-                "error": str(e)
-            }
-            save_status(status_file, status_data)
-            continue
+            status_data["jobs"][job_key]["status"] = "failed"
+            status_data["jobs"][job_key]["error"] = str(e)
 
-        status_data["jobs"][job_key] = {
-            "status": "success",
-            "timestamp": datetime.now().isoformat(),
-            "workdir": str(job_workdir),
-            "error": ""
-        }
+        status_data["jobs"][job_key]["timestamp"] = datetime.now().isoformat()
         save_status(status_file, status_data)
-        logger.info(f"Задача {job_key} успешно завершена, статус сохранен")
+        logger.info(f"Задача {job_key} завершена, статус сохранен")
 
     logger.info("Все задачи обработаны.")
 
