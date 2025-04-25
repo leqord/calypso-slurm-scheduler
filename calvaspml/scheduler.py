@@ -348,11 +348,14 @@ def main():
                         help="Команда запуска вычислений для структуры")
     parser.add_argument("--calypso_exe", required=True, 
                         help="Путь к исполняемому файлу Calypso")
-    parser.add_argument("--calypso_workdir", required=True, 
+    parser.add_argument("--calypso_workdir", required=False,
+                        default="./calypso",
                         help="Путь к рабочей директории Calypso")
-    parser.add_argument("--tasks_dir", required=True, 
+    parser.add_argument("--tasks_dir", required=False,
+                        default="./tasks", 
                         help="Путь к директории, в которой будут располагаться задания Slurm")
-    parser.add_argument("--input_dir", required=True, 
+    parser.add_argument("--input_dir", required=False,
+                        default="./input",
                         help="Путь к директории, в которой находятся общие входные файлы для VASP:\
                          POTCAR, INCAR_1, INCAR_2, ..., INCAR_N")
     parser.add_argument("--sbatch_template", required=True, 
