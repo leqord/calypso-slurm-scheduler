@@ -183,32 +183,38 @@ class CalypsoScheduler():
                 return int(step_path.name.split("_")[1])
             
             max_step_folder = max(step_folders, key=extract_step_number)
-            
-            outcar_source = max_step_folder / "OUTCAR"
-            if not outcar_source.exists():
-                raise FileNotFoundError(f"Файл {outcar_source} не найден")
+
+            target_outcar = self.calypso_workdir / f"OUTCAR_{job_number}"
+            target_contcar = self.calypso_workdir / f"CONTCAR_{job_number}"
+            target_poscar = self.calypso_workdir / f"POSCAR_{job_number}"
+
+            poscar_source = job_folder / "POSCAR_ORIGINAL"
+            if not contcar_source.exists():
+                raise FileNotFoundError(f"Файл {poscar_source} не найден")
+
+            self.logger.debug(f"{poscar_source} -> {target_poscar}")
+            shutil.copy(poscar_source, target_poscar)
 
             contcar_source = max_step_folder / "CONTCAR"
             if not contcar_source.exists():
                 self.logger.error(f"Отсутствует файл CONTCAR: {contcar_source}, файл НЕ копируется")
                 #raise FileNotFoundError(f"Файл {contcar_source} не найден")
+            else:
+                with open(contcar_source, 'r') as file_obj:
+                    file_content = file_obj.read().strip()
+                    
+                    if not file_content:
+                        self.logger.warning(f"Файл {contcar_source} пуст, пропускаю")
+                        continue
+                self.logger.debug(f"{contcar_source} -> {target_contcar}")
+                shutil.copy(contcar_source, target_contcar)
             
-            poscar_source = job_folder / "POSCAR_ORIGINAL"
-            if not contcar_source.exists():
-                raise FileNotFoundError(f"Файл {poscar_source} не найден")
-            
-            target_outcar = self.calypso_workdir / f"OUTCAR_{job_number}"
-            target_contcar = self.calypso_workdir / f"CONTCAR_{job_number}"
-            target_poscar = self.calypso_workdir / f"POSCAR_{job_number}"
+            outcar_source = max_step_folder / "OUTCAR"
+            if not outcar_source.exists():
+                raise FileNotFoundError(f"Файл {outcar_source} не найден")
             
             self.logger.debug(f" {outcar_source} -> {target_outcar}")
             shutil.copy(outcar_source, target_outcar)
-
-            self.logger.debug(f"{contcar_source} -> {target_contcar}")
-            shutil.copy(contcar_source, target_contcar)
-
-            self.logger.debug(f"{poscar_source} -> {target_poscar}")
-            shutil.copy(poscar_source, target_poscar)
 
         return None
 

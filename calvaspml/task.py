@@ -112,11 +112,12 @@ class VaspJob:
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
-            contcar_path = step_dir / "CONTCAR"
+            #contcar_path = step_dir / "CONTCAR"
+            #not contcar_path.is_file() or 
             outcar_file = step_dir / "OUTCAR"
 
-            if not contcar_path.is_file() or not outcar_file.is_file():
-                error_message = f"Этап {i}: Файл/ы CONTCAR/OUTCAR не найден в {step_dir}"
+            if not outcar_file.is_file():
+                error_message = f"Этап {i}: Файл OUTCAR не найден в {step_dir}"
                 self.logger.error(error_message)
                 raise FileNotFoundError(error_message)
 
