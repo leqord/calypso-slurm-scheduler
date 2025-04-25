@@ -180,13 +180,6 @@ def main():
         logger.error(f"Не найдено ни одного файла POSCAR_* в {poscar_dir}")
         sys.exit(1)
 
-    status_data["jobs"][job_key] = {
-            "status": "success",
-            "timestamp": "",
-            "workdir": str(job_workdir),
-            "error": "",
-            "warning": "",
-        }
 
     for poscar_file in poscar_files:
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
@@ -202,6 +195,14 @@ def main():
 
         job_workdir = global_work_dir / f"{job_prefix}{identifier}"
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
+
+        status_data["jobs"][job_key] = {
+            "status": "success",
+            "timestamp": "",
+            "workdir": str(job_workdir),
+            "error": "",
+            "warning": "",
+        }
 
         try:
             job = VaspJob(workdir=job_workdir,
