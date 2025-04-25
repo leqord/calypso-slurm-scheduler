@@ -198,7 +198,7 @@ class CalypsoScheduler():
             contcar_source = max_step_folder / "CONTCAR"
             if not contcar_source.exists():
                 self.logger.error(f"Отсутствует файл CONTCAR: {contcar_source}, файл НЕ копируется")
-                continue
+                #continue
                 #raise FileNotFoundError(f"Файл {contcar_source} не найден")
             else:
                 with open(contcar_source, 'r') as file_obj:
@@ -206,9 +206,10 @@ class CalypsoScheduler():
                     
                     if not file_content:
                         self.logger.warning(f"Файл {contcar_source} пуст, пропускаю")
-                        continue
-                self.logger.debug(f"{contcar_source} -> {target_contcar}")
-                shutil.copy(contcar_source, target_contcar)
+                        #continue
+                    else:
+                        self.logger.debug(f"{contcar_source} -> {target_contcar}")
+                        shutil.copy(contcar_source, target_contcar)
             
             outcar_source = max_step_folder / "OUTCAR"
             if not outcar_source.exists():
