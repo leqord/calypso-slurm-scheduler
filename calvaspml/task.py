@@ -103,16 +103,16 @@ class VaspJob:
                 error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path} и OUTCAR"
                 self.logger.error(error_message)
 
-                outcar_file = step_dir / "OUTCAR"
-
-                if not outcar_file.is_file():
-                    raise RuntimeError(error_message)
+                # TODO: бросать VaspError такую, что выше этапы прекратятся, но не весь расчёт!
+                raise RuntimeError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
             contcar_path = step_dir / "CONTCAR"
-            if not contcar_path.is_file():
-                error_message = f"Этап {i}: Файл CONTCAR не найден в {step_dir}"
+            outcar_file = step_dir / "OUTCAR"
+
+            if not contcar_path.is_file() or not outcar_file.is_file():
+                error_message = f"Этап {i}: Файл/ы CONTCAR/OUTCAR не найден в {step_dir}"
                 self.logger.error(error_message)
                 raise FileNotFoundError(error_message)
 
