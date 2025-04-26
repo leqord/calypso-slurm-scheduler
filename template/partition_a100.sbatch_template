@@ -3,22 +3,9 @@
 #SBATCH --gres=gpu:1
 #SBATCH --time=0-48:00:00
 #SBATCH --partition=intel-a100-pci4 
-#SBATCH --output=test/task.out
-#SBATCH --error=test/task.err
+#SBATCH --output=task.out
+#SBATCH --error=task.err
 
 
-TOTAL_GPUS=$(nvidia-smi --query-gpu=name --format=csv,noheader | wc -l)
-TOTAL_CPUS=$(nproc)
-
-let "CPUS_PER_GPU=$TOTAL_CPUS / $TOTAL_GPUS"
-
-export OMP_NUM_THREADS=$CPUS_PER_GPU
-export OMP_PLACES=cores
-export OMP_PROC_BIND=close
-export OMP_STACKSIZE=512m
-
-source /home/achibisov/vasp/vasp643-nvidia/setenv.sh
-
-
-#mpirun -np $TOTAL_GPUS /home/achibisov/vasp/vasp643-nvidia/bin/vasp_std > vasp.log 2> errors.log
+$TASK_SCRIPT --config ./config.json
 
