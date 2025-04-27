@@ -314,8 +314,7 @@ class CalypsoScheduler():
                     job_status = get_job_status(slurm_id)
 
                     if job_status == "PENDING" or job_status == "RUNNING":
-                        self.logger.info(f"Задание slurm {slurm_id} для поколения {current_generation_number}\
-                                          в состоянии {job_status}, ожидаю")
+                        self.logger.info(f"Задание slurm {slurm_id} для поколения {current_generation_number} в состоянии {job_status}, ожидаю")
                         time.sleep(self.loop_sleep_seconds)
                         continue
                     elif not self.check_if_all_task_job_completed_from_id(str(current_generation_number)):
