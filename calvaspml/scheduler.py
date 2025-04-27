@@ -221,14 +221,16 @@ class CalypsoScheduler():
         return None
 
 
-    def submit_slurm_task_from_id(self, task_id: str, job_name: str):
+    def submit_slurm_task_from_id(self, task_id: str, job_name: str) -> int:
         self.logger.info(f"Запуск задания slurm для {task_id}")
         task_path = self.get_task_path_from_id(task_id)
 
         slurm_id = submit_job(self.slurm_config.sbatch_template, task_path, f"{self.slurm_config.job_prefix}_{job_name}")
 
         self.update_slurm_id_from_id(task_id, str(slurm_id))
-        return None
+
+        self.logger.info(f"Задание {task_id} с id {slurm_id} запущено, ожидаю завершения")
+        return slurm_id
     
 
     def update_slurm_id_from_id(self, task_id: str, slurm_id: str) -> None:
@@ -282,7 +284,6 @@ class CalypsoScheduler():
     def run(self):
         self.logger.info(f"Запуск основного цикла")
 
-        # TODO: ПОЧЕМУ-ТО БЫЛО СОЗДАНО 3 ДУБЛИРУЮЩИХ ЗАДАЧИ
         while True:
             self.logger.debug(f"Проверка, не завершена ли уже работа с текущим поколением")
 
@@ -320,7 +321,8 @@ class CalypsoScheduler():
                 else:
                     self.logger.info(f"Подготовка задния для поколения {current_generation_number}")
                     poscars = self.get_calypso_poscars()
-                    self.prepare_task_from_poscars(poscars=poscars, task_id=str(current_generation_number))
+                    task_path = self.prepare_task_from_poscars(poscars=poscars, task_id=str(current_generation_number))
+                    self.logger.info(f"Подготовлено задание в {str(task_path)}")
                     continue
 
             self.logger.info("Запуск Calypso")
@@ -367,7 +369,7 @@ def main():
     args = parser.parse_args()
 
     logger = logging.getLogger("ПЛАНИРОВЩИК")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     if not args.log_file is None:
         file_formatter = logging.Formatter('[%(asctime)s][%(levelname)s] %(message)s', 
