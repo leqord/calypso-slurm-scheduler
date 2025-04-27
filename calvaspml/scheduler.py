@@ -20,6 +20,16 @@ from scheduler_exceptions import *
 
 
 
+class DuplicateFilter(logging.Filter):
+
+    def filter(self, record):
+        current_log = (record.module, record.levelno, record.msg)
+        if current_log != getattr(self, "last_log", None):
+            self.last_log = current_log
+            return True
+        return False
+
+
 class SlurmConfig():
     def __init__(self,
                  sbatch_template: Path,
@@ -305,8 +315,8 @@ class CalypsoScheduler():
                     job_status = get_job_status(slurm_id)
 
                     if job_status == "PENDING" or job_status == "RUNNING":
-                        self.logger.debug(f"Задание slurm {slurm_id} для поколения {current_generation_number}\
-                                          в состоянии {job_status}, ожидаю {self.loop_sleep_seconds} секунд")
+                        self.logger.info(f"Задание slurm {slurm_id} для поколения {current_generation_number}\
+                                          в состоянии {job_status}, ожидаю")
                         time.sleep(self.loop_sleep_seconds)
                         continue
                     elif not self.check_if_all_task_job_completed_from_id(str(current_generation_number)):
@@ -369,7 +379,9 @@ def main():
     args = parser.parse_args()
 
     logger = logging.getLogger("ПЛАНИРОВЩИК")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+
+    logger.addFilter(DuplicateFilter())
 
     if not args.log_file is None:
         file_formatter = logging.Formatter('[%(asctime)s][%(levelname)s] %(message)s', 
@@ -382,7 +394,7 @@ def main():
     console_formatter = logging.Formatter('[%(asctime)s] %(message)s', 
                                         datefmt='%Y-%m-%d %H:%M:%S')
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG) 
+    console_handler.setLevel(logging.INFO) 
     console_handler.setFormatter(console_formatter)
     
     logger.addHandler(console_handler)
