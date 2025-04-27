@@ -363,7 +363,7 @@ def main():
     parser.add_argument("--sbatch_template", required=True, 
                         help="Путь к шаблону sbatch-файла для Slurm.\
                         Шаблон уже должен содержать корректные описания запрашиваемых ресурсов для Slurm,\
-                        а также правильно вызывать task.py: '$TASK_SCRIPT --config ./config.json --slurmid $SLURM_JOB_ID'")
+                        а также правильно вызывать task.py: '$TASK_SCRIPT'")
     parser.add_argument("--log_file", required=False, 
                         help="Файл для логирования")
     args = parser.parse_args()
