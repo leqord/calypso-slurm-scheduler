@@ -302,8 +302,7 @@ class CalypsoScheduler():
                 possible_current_task_path = self.get_task_path_from_id(str(current_generation_number))
 
                 if possible_current_task_path.is_dir():
-                    self.logger.debug(f"Задание slurm для поколения {current_generation_number}\
-                                       уже существует по пути {possible_current_task_path}")
+                    self.logger.debug(f"Задание slurm для поколения {current_generation_number} уже существует по пути {possible_current_task_path}")
                     
                     slurm_id = self.get_current_slurm_id_from_id(current_generation_number)
 
