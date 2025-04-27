@@ -6,4 +6,4 @@
 #SBATCH --error=task.err
 
 
-$TASK_SCRIPT --config ./config.json
+$TASK_SCRIPT

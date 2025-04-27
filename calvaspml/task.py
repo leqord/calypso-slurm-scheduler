@@ -136,7 +136,10 @@ def load_status(status_file: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Верхнеуровневый скрипт для последовательного запуска VaspJob задач с изоляцией этапов")
-    parser.add_argument("--config", required=True, help="Путь к конфигурационному файлу (JSON)")
+    parser.add_argument("--config", 
+                        required=False,
+                        default="./config.json",
+                        help="Путь к конфигурационному файлу (JSON)")
     args = parser.parse_args()
 
 
