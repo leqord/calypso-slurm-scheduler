@@ -23,11 +23,6 @@ class VaspJob:
                  logger: logging.Logger,
                  task_cmd: str = "mpirun vasp_std"
                  ):
-        """
-        workdir: каталог для данной задачи (job_N)
-        inputdir: каталог с общими файлами INCAR_* и POTCAR
-        initial_structure_filepath: начальный POSCAR (файл POSCAR_N из каталога с исходными структурами)
-        """
         self.logger = logger
         self.task_cmd = task_cmd
         self.workdir = workdir.resolve()
@@ -56,11 +51,6 @@ class VaspJob:
 
 
     def run(self) -> None:
-        """
-        Последовательно выполняет этапы расчёта.
-        Для каждого этапа создается отдельная директория step_N, куда копируются нужные файлы,
-        после чего запускается VASP с заданной рабочей директорией.
-        """
         for i, incar_file in enumerate(self.incar_files, start=1):
             step_dir = self.workdir / f"step_{i}"
             step_dir.mkdir(parents=True, exist_ok=True)

@@ -1,2 +1,0 @@
-class CalypsoError(Exception):
-    pass
