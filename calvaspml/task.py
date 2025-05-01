@@ -30,15 +30,6 @@ class VaspJob:
         self.inputdir = inputdir.resolve()
         self.initial_structure_filepath = initial_structure_filepath.resolve()
 
-        if ml_inputdir is not None:
-            self.ml_inputdir = ml_inputdir.resolve()
-            self.logger.info(f"Подключены входные файлы для МО: {self.ml_inputdir}")
-
-            # TODO: проверить соответствие ML_AB_N и INCAR_N
-        else:
-            self.logger.info(f"МО не подключено")
-            self.ml_inputdir = None
-
         if not self.initial_structure_filepath.is_file():
             raise FileNotFoundError(f"Начальный файл структуры не найден: {self.initial_structure_filepath}")
         potcar_path = self.inputdir / "POTCAR"
@@ -51,6 +42,13 @@ class VaspJob:
         )
         if not self.incar_files:
             raise FileNotFoundError(f"Не найдено ни одного файла INCAR_* в {self.inputdir}")
+        
+        if ml_inputdir is not None:
+            self.ml_inputdir = ml_inputdir.resolve()
+            self.logger.info(f"Подключены входные файлы для МО: {self.ml_inputdir}")
+        else:
+            self.logger.info(f"МО не подключено")
+            self.ml_inputdir = None
 
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"Рабочая директория задачи: {self.workdir}")
@@ -62,6 +60,11 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
+            # TODO: если для данного этапа N имеется ML_AB_N, То скопировать его сюжа
+            # после выполнения шага, если в INCAR_N был train, то скопировать ML_ABN в ML_AB
+            # КУДА-ТО, где его сможет взять следующая структура или уже взяла бы эта
+            # организовать в main()?
+
             step_dir = self.workdir / f"step_{i}"
             step_dir.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
