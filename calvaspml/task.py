@@ -33,6 +33,8 @@ class VaspJob:
         if ml_inputdir is not None:
             self.ml_inputdir = ml_inputdir.resolve()
             self.logger.info(f"Подключены входные файлы для МО: {self.ml_inputdir}")
+
+            # TODO: проверить соответствие ML_AB_N и INCAR_N
         else:
             self.logger.info(f"МО не подключено")
             self.ml_inputdir = None
