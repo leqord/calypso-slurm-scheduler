@@ -64,6 +64,7 @@ class VaspJob:
             # после выполнения шага, если в INCAR_N был train, то скопировать ML_ABN в ML_AB
             # КУДА-ТО, где его сможет взять следующая структура или уже взяла бы эта
             # организовать в main()?
+            # входные брать из ml_inputdir, а выходные ML_AB_N копировать с каждого этапа в workdir этого job
 
             step_dir = self.workdir / f"step_{i}"
             step_dir.mkdir(parents=True, exist_ok=True)
