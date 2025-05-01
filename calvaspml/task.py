@@ -86,24 +86,17 @@ class VaspJob:
                                         stdout=logfile, 
                                         stderr=subprocess.STDOUT, 
                                         text=True, 
-                                        #check=True,
                                         cwd=step_dir,
-                                        #executable='/bin/bash'
                                         )
             
-            #outcar_file = step_dir / 
-
             if result.returncode != 0:
                 error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path} и OUTCAR"
                 self.logger.error(error_message)
 
-                # TODO: бросать VaspError такую, что выше этапы прекратятся, но не весь расчёт!
                 raise VaspExecutionError(error_message)
             else:
                 self.logger.info(f"Этап {i} завершён успешно")
             
-            #contcar_path = step_dir / "CONTCAR"
-            #not contcar_path.is_file() or 
             outcar_file = step_dir / "OUTCAR"
 
             if not outcar_file.is_file():
