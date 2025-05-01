@@ -21,13 +21,21 @@ class VaspJob:
                  inputdir: Path,
                  initial_structure_filepath: Path,
                  logger: logging.Logger,
-                 task_cmd: str = "mpirun vasp_std"
+                 task_cmd: str = "mpirun vasp_std",
+                 ml_inputdir: Path = None,
                  ):
         self.logger = logger
         self.task_cmd = task_cmd
         self.workdir = workdir.resolve()
         self.inputdir = inputdir.resolve()
         self.initial_structure_filepath = initial_structure_filepath.resolve()
+
+        if ml_inputdir is not None:
+            self.ml_inputdir = ml_inputdir.resolve()
+            self.logger.info(f"Подключены входные файлы для МО: {self.ml_inputdir}")
+        else:
+            self.logger.info(f"МО не подключено")
+            self.ml_inputdir = None
 
         if not self.initial_structure_filepath.is_file():
             raise FileNotFoundError(f"Начальный файл структуры не найден: {self.initial_structure_filepath}")
