@@ -60,6 +60,8 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
+            # TODO: использовать writekp
+             
             # TODO: на первой итерации калипсо должен быть полный рандом
             # так что делаем популяцию больше и обучаем на первой итерации
 
