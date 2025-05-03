@@ -185,7 +185,7 @@ class CalypsoScheduler():
         generation = None
         if step_file_path.is_file():
             with open(step_file_path) as step_file:
-                generation = int(step_file.read())
+                generation = int(step_file.read()) - 1
         
         return generation
 
@@ -460,8 +460,9 @@ def main():
                         help="Путь к шаблону sbatch-файла для Slurm.\
                         Шаблон уже должен содержать корректные описания запрашиваемых ресурсов для Slurm,\
                         а также правильно вызывать task.py: '$TASK_SCRIPT'")
-    parser.add_argument("--log_file", required=False, 
-                        help="Файл для логирования")
+    parser.add_argument("--ml_steps", required=False, 
+                        help="Количество поколений, ")
+    
     args = parser.parse_args()
 
     logger = logging.getLogger("ПЛАНИРОВЩИК")
