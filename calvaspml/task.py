@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import os
+
 import sys
+import math
 import json
 import logging
 import argparse
@@ -21,6 +22,7 @@ class VaspJob:
                  inputdir: Path,
                  initial_structure_filepath: Path,
                  logger: logging.Logger,
+                 kspacing: float = 0.05,
                  task_cmd: str = "mpirun vasp_std",
                  ml_inputdir: Path = None,
                  ):
@@ -29,6 +31,7 @@ class VaspJob:
         self.workdir = workdir.resolve()
         self.inputdir = inputdir.resolve()
         self.initial_structure_filepath = initial_structure_filepath.resolve()
+        self.kspacing = kspacing
 
         if not self.initial_structure_filepath.is_file():
             raise FileNotFoundError(f"Начальный файл структуры не найден: {self.initial_structure_filepath}")
@@ -58,10 +61,65 @@ class VaspJob:
         self.logger.info(f"Скопирован исходный файл структуры в {self.poscar_original}")
 
 
+    def write_kpoints(self, workdir: Path) -> None:
+        # credits to Li Zhu < zhulipresent@gmail.com >
+        def dot(x, y):
+            return x[0]*y[0] + x[1]*y[1] + x[2]*y[2]
+        
+        def cross(x, y):
+            z1 = x[1]*y[2] - x[2]*y[1]
+            z2 = x[2]*y[0] - x[0]*y[2]
+            z3 = x[0]*y[1] - x[1]*y[0]
+            return [z1, z2, z3]
+        
+        def kmf(kgrid, gi):
+            kd = int(gi/kgrid/2.0/math.pi)
+            if kd == 0: kd = 1
+            dd = gi/kd/2.0/math.pi
+            if dd >= kgrid:
+                for i in range(0, 10):
+                    kd += i
+                    dd = gi/kd/2.0/math.pi
+                    if dd <= kgrid: break
+            return kd 
+
+        poscar_content = []     
+        with open(workdir + 'POSCAR') as poscar:
+            for line in poscar:
+                poscar_content.append(line.split())
+        
+        lattice = []
+        for item in poscar_content[2:5]:
+            lattice.append(list(map(float, item)))
+
+        c = cross(lattice[1], lattice[2])
+        volume = dot(lattice[0], c)
+        g = []
+        g1 = [ 2.0 * math.pi * item / volume for item in c]
+        c = cross(lattice[2], lattice[0])
+        g2 = [ 2.0 * math.pi * item / volume for item in c]
+        c = cross(lattice[0], lattice[1])
+        g3 = [ 2.0 * math.pi * item / volume for item in c]
+        g = [g1, g2, g3]
+        
+        rl = []
+        for i in range(0, 3):
+            rl.append(math.sqrt(dot(g[i],g[i])))
+
+        kmesh = []
+        for i in range(0, 3):
+            kmesh.append(kmf(self.kspacing, rl[i]))
+        
+        with open(workdir + 'KPOINTS', 'w') as kpoints:
+            kpoints.write('A\n0\nG\n')
+            kpoints.write('%2d %2d %2d\n' % tuple(kmesh))
+            kpoints.write('%2d %2d %2d\n' % (0,0,0))
+            kpoints.close()
+        return None
+
+
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
-            # TODO: использовать writekp
-             
             # TODO: на первой итерации калипсо должен быть полный рандом
             # так что делаем популяцию больше и обучаем на первой итерации
 
@@ -97,6 +155,9 @@ class VaspJob:
                     raise FileNotFoundError(error_message)
                 shutil.copy(prev_contcar, poscar_dest)
                 self.logger.info(f"Этап {i}: CONTCAR из {prev_contcar} скопирован в {poscar_dest}")
+
+            self.logger.debug(f"Создаём KPOINTS")
+            self.write_kpoints(step_dir)
 
             log_file_path = step_dir / f"vasp_step_{i}.log"
             with open(log_file_path, "w") as logfile:
@@ -150,7 +211,7 @@ def main():
         print(f"Конфигурационный файл не найден: {config_path}", file=sys.stderr)
         sys.exit(1)
     with open(config_path, 'r') as f:
-        config = json.load(f)
+        config: dict = json.load(f)
 
     try:
         input_dir = Path(config["input_dir"]).resolve()
@@ -159,6 +220,7 @@ def main():
         vasp_cmd = config["vasp_cmd"]
         status_file = Path(config.get("status_file", global_work_dir / "status.json")).resolve()
         job_prefix = config.get("job_prefix", "job_")
+        kspacing = config.get("kspacing", 0.04)
     except KeyError as e:
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
@@ -214,6 +276,7 @@ def main():
             job = VaspJob(workdir=job_workdir,
                           inputdir=input_dir,
                           initial_structure_filepath=poscar_file,
+                          kspacing=kspacing,
                           logger=logger,
                           task_cmd=vasp_cmd)
             job.run()
