@@ -25,6 +25,9 @@ class VaspJob:
                  kspacing: float = 0.05,
                  task_cmd: str = "mpirun vasp_std",
                  ml_inputdir: Path = None,
+                 ml_train: bool = False,
+                 ml_refit: bool = False,
+                 ml_predict: bool = False,
                  ):
         self.logger = logger
         self.task_cmd = task_cmd
@@ -32,6 +35,7 @@ class VaspJob:
         self.inputdir = inputdir.resolve()
         self.initial_structure_filepath = initial_structure_filepath.resolve()
         self.kspacing = kspacing
+
 
         if not self.initial_structure_filepath.is_file():
             raise FileNotFoundError(f"Начальный файл структуры не найден: {self.initial_structure_filepath}")
@@ -52,6 +56,17 @@ class VaspJob:
         else:
             self.logger.info(f"МО не подключено")
             self.ml_inputdir = None
+
+        if ml_predict and (ml_train or ml_refit):
+            self.logger.warning(f"Конфликт: одновременно активны флаг ml_predict и ml_train/ml_refit; все функции МО отключены")
+
+            self.ml_train = False
+            self.ml_refit = False
+            self.ml_predict = False
+        else:
+            self.ml_train = ml_train
+            self.ml_refit = ml_refit
+            self.ml_predict = ml_predict
 
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"Рабочая директория задачи: {self.workdir}")
@@ -223,11 +238,10 @@ def main():
         job_prefix = config.get("job_prefix", "job_")
         kspacing = config.get("kspacing", 0.04)
 
-        ml_train = config.get("ml_train", False)
-        ml_refit = config.get("ml_refit", False)
-        ml_predict = config.get("ml_predict", False)
+        ml_train = str(config.get("ml_train", "")).lower() == "enable"
+        ml_refit = str(config.get("ml_refit", "")).lower() == "enable"
+        ml_predict = str(config.get("ml_predict", "")).lower() == "enable"
 
-        # TODO: проверить логику
     except KeyError as e:
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
@@ -285,7 +299,10 @@ def main():
                           initial_structure_filepath=poscar_file,
                           kspacing=kspacing,
                           logger=logger,
-                          task_cmd=vasp_cmd)
+                          task_cmd=vasp_cmd,
+                          ml_train=ml_train,
+                          ml_refit=ml_refit,
+                          ml_predict=ml_predict)
             job.run()
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
