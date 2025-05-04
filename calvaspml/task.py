@@ -120,6 +120,7 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
+            # TODO: брать исходные файлы для ML из input dir (режим predict)
             # TODO: на первой итерации калипсо должен быть полный рандом
             # так что делаем популяцию больше и обучаем на первой итерации
 
@@ -221,6 +222,12 @@ def main():
         status_file = Path(config.get("status_file", global_work_dir / "status.json")).resolve()
         job_prefix = config.get("job_prefix", "job_")
         kspacing = config.get("kspacing", 0.04)
+
+        ml_train = config.get("ml_train", False)
+        ml_refit = config.get("ml_refit", False)
+        ml_predict = config.get("ml_predict", False)
+
+        # TODO: проверить логику
     except KeyError as e:
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
