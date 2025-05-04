@@ -24,7 +24,6 @@ class VaspJob:
                  logger: logging.Logger,
                  kspacing: float = 0.05,
                  task_cmd: str = "mpirun vasp_std",
-                 ml_inputdir: Path = None,
                  ml_train: bool = False,
                  ml_refit: bool = False,
                  ml_predict: bool = False,
@@ -50,13 +49,6 @@ class VaspJob:
         if not self.incar_files:
             raise FileNotFoundError(f"Не найдено ни одного файла INCAR_* в {self.inputdir}")
         
-        if ml_inputdir is not None:
-            self.ml_inputdir = ml_inputdir.resolve()
-            self.logger.info(f"Подключены входные файлы для МО: {self.ml_inputdir}")
-        else:
-            self.logger.info(f"МО не подключено")
-            self.ml_inputdir = None
-
         if ml_predict and (ml_train or ml_refit):
             self.logger.warning(f"Конфликт: одновременно активны флаг ml_predict и ml_train/ml_refit; все функции МО отключены")
 
@@ -67,6 +59,20 @@ class VaspJob:
             self.ml_train = ml_train
             self.ml_refit = ml_refit
             self.ml_predict = ml_predict
+        
+        self.ml_ab_files = sorted(
+            self.inputdir.glob("ML_AB_*"),
+            key=lambda f: int(re.search(r'ML_AB_(\d+)', f.name).group(1))
+        )
+        self.ml_ab_files = sorted(
+            self.inputdir.glob("ML_FF_*"),
+            key=lambda f: int(re.search(r'ML_FF_(\d+)', f.name).group(1))
+        )
+        
+        # TODO: проверить соответствие ML_AB_N и ML_FF_N для INCAR_N
+        if self.ml_train or self.ml_predict or self.ml_refit:
+
+            pass
 
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"Рабочая директория задачи: {self.workdir}")
