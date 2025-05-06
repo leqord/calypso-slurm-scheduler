@@ -64,15 +64,17 @@ class VaspJob:
             self.inputdir.glob("ML_AB_*"),
             key=lambda f: int(re.search(r'ML_AB_(\d+)', f.name).group(1))
         )
-        self.ml_ab_files = sorted(
+        self.ml_ff_files = sorted(
             self.inputdir.glob("ML_FF_*"),
             key=lambda f: int(re.search(r'ML_FF_(\d+)', f.name).group(1))
         )
         
-        # TODO: проверить соответствие ML_AB_N и ML_FF_N для INCAR_N
-        if self.ml_train or self.ml_predict or self.ml_refit:
+        if (self.ml_train or self.ml_refit) and not self.ml_ab_files:
+            self.logger.warning(f"Активировано обучение/переобучение MLFF, но нет ни одного ML_AB_* файла")
+        
+        if self.ml_predict and not self.ml_predict:
+            self.logger.warning(f"Активировано использование обученных MLFF, но нет ни одного ML_FF_* файла")
 
-            pass
 
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"Рабочая директория задачи: {self.workdir}")
