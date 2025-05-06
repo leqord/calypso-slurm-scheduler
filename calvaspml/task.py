@@ -10,7 +10,7 @@ import re
 import shutil
 from pathlib import Path
 from datetime import datetime
-
+from incar import IncarFile
 
 class VaspExecutionError(Exception):
     pass
@@ -27,6 +27,8 @@ class VaspJob:
                  ml_train: bool = False,
                  ml_refit: bool = False,
                  ml_predict: bool = False,
+                 ml_input: Path = None,
+                 ml_output: Path = None,
                  ):
         self.logger = logger
         self.task_cmd = task_cmd
@@ -59,21 +61,35 @@ class VaspJob:
             self.ml_train = ml_train
             self.ml_refit = ml_refit
             self.ml_predict = ml_predict
+
+
+        self.ml_input: Path = ml_input.resolve() if ml_input is not None else None
+        self.ml_output: Path = ml_output.resolve() if ml_output is not None else None
+
+        self.ml_output.mkdir(parents=True, exist_ok=True)
         
-        self.ml_ab_files = sorted(
-            self.inputdir.glob("ML_AB_*"),
-            key=lambda f: int(re.search(r'ML_AB_(\d+)', f.name).group(1))
-        )
-        self.ml_ff_files = sorted(
-            self.inputdir.glob("ML_FF_*"),
-            key=lambda f: int(re.search(r'ML_FF_(\d+)', f.name).group(1))
-        )
+        self.ml_ab_files = []
+        self.ml_ff_files = []
+
+        if self.ml_input is not None and self.ml_input.exists():
+            self.ml_ab_files = sorted(
+                self.ml_input.glob("ML_AB_*"),
+                key=lambda f: int(re.search(r'ML_AB_(\d+)', f.name).group(1))
+            )
+            self.ml_ff_files = sorted(
+                self.ml_input.glob("ML_FF_*"),
+                key=lambda f: int(re.search(r'ML_FF_(\d+)', f.name).group(1))
+            )
+        else:
+            self.logger.warning(f"Директория входных файлов для MLFF {str(self.ml_input)} не задана или не существует")
+
         
-        if (self.ml_train or self.ml_refit) and not self.ml_ab_files:
-            self.logger.warning(f"Активировано обучение/переобучение MLFF, но нет ни одного ML_AB_* файла")
+        if self.ml_train or self.ml_refit:
+            if not self.ml_ab_files:
+                self.logger.warning(f"Активировано обучение/переобучение MLFF, но нет ни одного ML_AB_* файла в")
         
         if self.ml_predict and not self.ml_predict:
-            self.logger.warning(f"Активировано использование обученных MLFF, но нет ни одного ML_FF_* файла")
+            self.logger.warning(f"Активировано использование обученных MLFF, но нет ни одного ML_FF_* файла в")
 
 
         self.workdir.mkdir(parents=True, exist_ok=True)
@@ -83,6 +99,11 @@ class VaspJob:
         shutil.copy(self.initial_structure_filepath, self.poscar_original)
         self.logger.info(f"Скопирован исходный файл структуры в {self.poscar_original}")
 
+
+    def configure_incar_for_ml(self) -> None:
+        self.logger.debug(f"Конфигурирую INCAR для включения MLFF")
+        return None
+    
 
     def write_kpoints(self, workdir: Path) -> None:
         # credits to Li Zhu < zhulipresent@gmail.com >
@@ -277,8 +298,11 @@ def main():
         logger.error(f"Не найдено ни одного файла POSCAR_* в {poscar_dir}")
         sys.exit(1)
 
+    current_ml_input: Path = input_dir
 
     for poscar_file in poscar_files:
+        logger.debug(f"Входные файлы MLFF берём из {current_ml_input}")
+        
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
         job_key = poscar_file.name 
 
@@ -308,10 +332,13 @@ def main():
                           kspacing=kspacing,
                           logger=logger,
                           task_cmd=vasp_cmd,
+                          ml_input=current_ml_input,
+                          ml_output=job_workdir,
                           ml_train=ml_train,
                           ml_refit=ml_refit,
                           ml_predict=ml_predict)
             job.run()
+            current_ml_input = job_workdir
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
             status_data["jobs"][job_key]["warning"] = str(e)
