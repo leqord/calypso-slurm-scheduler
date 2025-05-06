@@ -460,9 +460,13 @@ def main():
                         help="Путь к шаблону sbatch-файла для Slurm.\
                         Шаблон уже должен содержать корректные описания запрашиваемых ресурсов для Slurm,\
                         а также правильно вызывать task.py: '$TASK_SCRIPT'")
+    parser.add_argument("--log_file", required=False,
+                        default="./scheduler.log",
+                        help="Путь к файлу лога")
     parser.add_argument("--ml_steps", required=False,
                         help="Поколения до указанного включительно будут использованы для обучения VASP ML FF,\
                             после указанного обученные ML FF будут использоваться в режиме Fast")
+    
     
     args = parser.parse_args()
 
