@@ -128,7 +128,7 @@ class VaspJob:
             return kd 
 
         poscar_content = []     
-        with open(workdir + 'POSCAR') as poscar:
+        with open(workdir / 'POSCAR') as poscar:
             for line in poscar:
                 poscar_content.append(line.split())
         
@@ -154,7 +154,7 @@ class VaspJob:
         for i in range(0, 3):
             kmesh.append(kmf(self.kspacing, rl[i]))
         
-        with open(workdir + 'KPOINTS', 'w') as kpoints:
+        with open(workdir / 'KPOINTS', 'w') as kpoints:
             kpoints.write('A\n0\nG\n')
             kpoints.write('%2d %2d %2d\n' % tuple(kmesh))
             kpoints.write('%2d %2d %2d\n' % (0,0,0))
@@ -302,7 +302,7 @@ def main():
 
     for poscar_file in poscar_files:
         logger.debug(f"Входные файлы MLFF берём из {current_ml_input}")
-        
+
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
         job_key = poscar_file.name 
 
