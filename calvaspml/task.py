@@ -201,8 +201,9 @@ class VaspJob:
                 shutil.copy(prev_contcar, poscar_dest)
                 self.logger.info(f"Этап {i}: CONTCAR из {prev_contcar} скопирован в {poscar_dest}")
 
-            self.logger.debug(f"Создаём KPOINTS")
-            self.write_kpoints(step_dir)
+            if self.kspacing is not None:
+                self.logger.debug(f"Создаём KPOINTS")
+                self.write_kpoints(step_dir)
 
             log_file_path = step_dir / f"vasp_step_{i}.log"
             with open(log_file_path, "w") as logfile:
