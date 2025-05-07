@@ -22,7 +22,6 @@ class VaspJob:
                  inputdir: Path,
                  initial_structure_filepath: Path,
                  logger: logging.Logger,
-                 kspacing: float = 0.05,
                  task_cmd: str = "mpirun vasp_std",
                  ml_train: bool = False,
                  ml_refit: bool = False,
@@ -35,7 +34,6 @@ class VaspJob:
         self.workdir = workdir.resolve()
         self.inputdir = inputdir.resolve()
         self.initial_structure_filepath = initial_structure_filepath.resolve()
-        self.kspacing = kspacing
 
 
         if not self.initial_structure_filepath.is_file():
@@ -268,7 +266,6 @@ def main():
             job = VaspJob(workdir=job_workdir,
                           inputdir=input_dir,
                           initial_structure_filepath=poscar_file,
-                          kspacing=kspacing,
                           logger=logger,
                           task_cmd=vasp_cmd,
                           ml_input=current_ml_input,
