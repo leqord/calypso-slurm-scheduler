@@ -243,7 +243,7 @@ def main():
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
         job_key = poscar_file.name 
 
-        job_status = status_data["jobs"].get(job_key, {}).get("status")
+        job_status = status_data["jobs"].get(job_key, {}).get("status", "failed")
         if  job_status == "success":
             logger.info(f"Задача {job_key} уже успешно завершена, пропускаем")
             continue
@@ -255,7 +255,7 @@ def main():
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
 
         status_data["jobs"][job_key] = {
-            "status": "success",
+            "status": "failed",
             "timestamp": "",
             "workdir": str(job_workdir),
             "error": "",
@@ -280,11 +280,11 @@ def main():
             status_data["jobs"][job_key]["warning"] = str(e)
         except Exception as e:
             logger.error(f"Задача {job_key} завершилась с ошибкой: {e}")
-            status_data["jobs"][job_key]["status"] = "failed"
             status_data["jobs"][job_key]["error"] = str(e)
 
         status_data["jobs"][job_key]["timestamp"] = datetime.now().isoformat()
         save_status(status_file, status_data)
+        status_data["jobs"][job_key]["status"] = "success"
         logger.info(f"Задача {job_key} завершена, статус сохранен")
 
     logger.info("Все задачи обработаны.")
