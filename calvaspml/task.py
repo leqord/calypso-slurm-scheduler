@@ -238,12 +238,22 @@ def main():
     current_ml_input: Path = input_dir
 
     for poscar_file in poscar_files:
+        if status_data["jobs"].get(job_key) is None:
+            status_data["jobs"][job_key] = {
+            "status": "not-finished",
+            "timestamp": "",
+            "workdir": "",
+            "error": "",
+            "warning": "",
+            }
+
+    for poscar_file in poscar_files:
         logger.debug(f"Входные файлы MLFF берём из {current_ml_input}")
 
         identifier = re.search(r'POSCAR_(\d+)', poscar_file.name).group(1)
         job_key = poscar_file.name 
 
-        job_status = status_data["jobs"].get(job_key, {}).get("status", "failed")
+        job_status = status_data["jobs"].get(job_key, {}).get("status", "not-finished")
         if  job_status == "success":
             logger.info(f"Задача {job_key} уже успешно завершена, пропускаем")
             continue
@@ -255,7 +265,7 @@ def main():
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
 
         status_data["jobs"][job_key] = {
-            "status": "failed",
+            "status": "not-finished",
             "timestamp": "",
             "workdir": str(job_workdir),
             "error": "",
