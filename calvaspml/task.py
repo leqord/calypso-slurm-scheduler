@@ -264,13 +264,7 @@ def main():
         job_workdir = global_work_dir / f"{job_prefix}{identifier}"
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
 
-        status_data["jobs"][job_key] = {
-            "status": "not-finished",
-            "timestamp": "",
-            "workdir": str(job_workdir),
-            "error": "",
-            "warning": "",
-        }
+        status_data["jobs"][job_key]["workdir"] =  str(job_workdir)
 
         try:
             job = VaspJob(workdir=job_workdir,
@@ -290,11 +284,13 @@ def main():
             status_data["jobs"][job_key]["warning"] = str(e)
         except Exception as e:
             logger.error(f"Задача {job_key} завершилась с ошибкой: {e}")
+            status_data["jobs"][job_key]["status"] = "error"
             status_data["jobs"][job_key]["error"] = str(e)
 
         status_data["jobs"][job_key]["timestamp"] = datetime.now().isoformat()
-        save_status(status_file, status_data)
         status_data["jobs"][job_key]["status"] = "success"
+
+        save_status(status_file, status_data)
         logger.info(f"Задача {job_key} завершена, статус сохранен")
 
     logger.info("Все задачи обработаны.")
