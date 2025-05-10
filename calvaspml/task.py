@@ -238,8 +238,8 @@ def main():
     current_ml_input: Path = input_dir
 
     for poscar_file in poscar_files:
-        if status_data["jobs"].get(job_key) is None:
-            status_data["jobs"][job_key] = {
+        if status_data["jobs"].get(poscar_file.name) is None:
+            status_data["jobs"][poscar_file.name] = {
             "status": "not-finished",
             "timestamp": "",
             "workdir": "",
