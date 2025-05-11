@@ -118,7 +118,8 @@ class VaspJob:
                 # ставим в Incar refit
                 # запускаем
                 # профит, меняем в INCAR refit на run,
-                # снимаем флаг self.ml_refit, переключаем на self.ml_run
+                # снимаем флаг ml_refit, переключаем на ml_run
+                # НО ВО ВНЕШНЕМ ЦИКЛЕ
 
             if self.ml_predict:
                 pass
