@@ -147,8 +147,7 @@ class VaspJob:
                 else:
                     self.logger.debug(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
                     incar_file.set("ML_LMLFF", False)
-                # снимаем флаг ml_refit, переключаем на ml_run
-                # НО ВО ВНЕШНЕМ ЦИКЛЕ
+                # NOTE: снимаем флаг ml_refit, переключаем на ml_run НО ВО ВНЕШНЕМ ЦИКЛЕ
 
             if self.ml_predict:
                 ml_ff  = self.ml_input / f"ML_FF_{i}"
@@ -166,16 +165,6 @@ class VaspJob:
                     incar_file.set("ML_MODE", "run")
                 else:
                     self.logger.debug(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
-
-            # TODO: брать исходные файлы для ML из input dir (режим predict)
-            # TODO: на первой итерации калипсо должен быть полный рандом
-            # так что делаем популяцию больше и обучаем на первой итерации
-
-            # TODO: если для данного этапа N имеется ML_AB_N, То скопировать его сюжа
-            # после выполнения шага, если в INCAR_N был train, то скопировать ML_ABN в ML_AB
-            # КУДА-ТО, где его сможет взять следующая структура или уже взяла бы эта
-            # организовать в main()?
-            # входные брать из ml_inputdir, а выходные ML_AB_N копировать с каждого этапа в workdir этого job
 
             potcar_src = self.inputdir / "POTCAR"
             potcar_dest = step_dir / "POTCAR"
