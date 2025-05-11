@@ -105,11 +105,33 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
+            step_dir = self.workdir / f"step_{i}"
+            step_dir.mkdir(parents=True, exist_ok=True)
+            self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
+
+            incar_dest = step_dir / "INCAR"
+            shutil.copy(incar_file, incar_dest)
+            self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
+
+            incar_file = IncarFile(incar_dest)
+
             if self.ml_train:
-                pass
-                # TODO: проверяем INCAR, если настроек нет, ставим нужные
-                # копируем ML_ABN, откуда указано в ML_AB
-                # не забыть добавить параметр, увеличивающий колво референсных структур
+                ml_ab  = self.ml_input / f"ML_AB_{i}"
+                ml_abn = self.ml_input / f"ML_ABN_{i}"
+                ml_ab_target = step_dir / "ML_AB"
+
+                if ml_abn.is_file():
+                    self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
+                    shutil.copy(ml_abn, ml_ab_target)
+                elif ml_ab.is_file():
+                    self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
+                    shutil.copy(ml_ab, ml_ab_target)
+                else:
+                    self.logger.debug(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, начинаем с нуля")
+                
+                incar_file.set("ML_LMLFF", True)
+                incar_file.set("ML_MODE", "train")
+                # NOTE: не забыть добавить параметр, увеличивающий колво референсных структур
 
             if self.ml_refit:
                 pass
@@ -135,14 +157,6 @@ class VaspJob:
             # КУДА-ТО, где его сможет взять следующая структура или уже взяла бы эта
             # организовать в main()?
             # входные брать из ml_inputdir, а выходные ML_AB_N копировать с каждого этапа в workdir этого job
-
-            step_dir = self.workdir / f"step_{i}"
-            step_dir.mkdir(parents=True, exist_ok=True)
-            self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
-
-            incar_dest = step_dir / "INCAR"
-            shutil.copy(incar_file, incar_dest)
-            self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
 
             potcar_src = self.inputdir / "POTCAR"
             potcar_dest = step_dir / "POTCAR"

@@ -12,8 +12,8 @@ class IncarFile:
     BOOL_MAP = {'.TRUE.': True, '.FALSE.': False}
     INV_BOOL_MAP = {True: '.TRUE.', False: '.FALSE.'}
 
-    def __init__(self, filepath):
-        self.filepath = Path(filepath)
+    def __init__(self, filepath: Path):
+        self.filepath = filepath
         if not self.filepath.exists():
             raise FileNotFoundError(f"{self.filepath} not found")
 
