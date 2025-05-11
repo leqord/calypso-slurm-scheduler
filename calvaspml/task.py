@@ -325,12 +325,11 @@ def main():
                           logger=logger,
                           task_cmd=vasp_cmd,
                           ml_input=current_ml_input,
-                          ml_output=job_workdir,
+                          ml_output=current_ml_input,
                           ml_train=ml_train,
                           ml_refit=ml_refit,
                           ml_predict=ml_predict)
             job.run()
-            current_ml_input = job_workdir
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
             status_data["jobs"][job_key]["warning"] = str(e)
