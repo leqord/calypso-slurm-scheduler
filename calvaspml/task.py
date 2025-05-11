@@ -221,7 +221,14 @@ class VaspJob:
                 self.logger.error(error_message)
                 raise FileNotFoundError(error_message)
             
-            # TODO: а тут скопировать всё в ml_out (где-то снаружи структур пусть будет, чтобы перезаписывалось)
+            ml_abn_out = step_dir / "ML_ABN"
+            ml_ffn_out = step_dir / "ML_FFN"
+
+            if ml_abn_out.is_file():
+                shutil.copy(ml_abn_out, self.ml_output / f"ML_ABN_{i}")
+            
+            if ml_ffn_out.is_file():
+                shutil.copy(ml_ffn_out, self.ml_output / f"ML_FFN_{i}")
 
 
 def save_status(status_file: Path, status_data: dict) -> None:
