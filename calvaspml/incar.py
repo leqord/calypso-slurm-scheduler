@@ -2,13 +2,6 @@ import re
 from pathlib import Path
 
 class IncarFile:
-    """
-    Редактирование INCAR «на месте»:
-    - get(): найти первый тэг и вернуть его значение (bool/int/float/str)
-    - set(): заменить все вхождения тэга или добавить его в конец
-    - delete(): удалить все строки с этим тэгом
-    Комментарии и прочие строки сохраняются без изменений.
-    """
     BOOL_MAP = {'.TRUE.': True, '.FALSE.': False}
     INV_BOOL_MAP = {True: '.TRUE.', False: '.FALSE.'}
 

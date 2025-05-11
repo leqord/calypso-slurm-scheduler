@@ -114,12 +114,12 @@ class VaspJob:
             self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
 
             incar_file = IncarFile(incar_dest)
+            ml_ab  = self.ml_input / f"ML_AB_{i}"
+            ml_abn = self.ml_input / f"ML_ABN_{i}"
+            ml_ab_target = step_dir / "ML_AB"
+            ml_ff_target = step_dir / "ML_FF"
 
             if self.ml_train:
-                ml_ab  = self.ml_input / f"ML_AB_{i}"
-                ml_abn = self.ml_input / f"ML_ABN_{i}"
-                ml_ab_target = step_dir / "ML_AB"
-
                 if ml_abn.is_file():
                     self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
                     shutil.copy(ml_abn, ml_ab_target)
@@ -134,20 +134,39 @@ class VaspJob:
                 # NOTE: не забыть добавить параметр, увеличивающий колво референсных структур
 
             if self.ml_refit:
-                pass
-                # TODO: проверяем INCAR
-                # копируем ML_ABN
-                # ставим в Incar refit
-                # запускаем
-                # профит, меняем в INCAR refit на run,
+                if ml_abn.is_file():
+                    self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
+                    shutil.copy(ml_abn, ml_ab_target)
+                elif ml_ab.is_file():
+                    self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
+                    shutil.copy(ml_ab, ml_ab_target)
+                
+                if ml_abn.is_file() or ml_ab.is_file():
+                    incar_file.set("ML_LMLFF", True)
+                    incar_file.set("ML_MODE", "refit")
+                else:
+                    self.logger.debug(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
+                    incar_file.set("ML_LMLFF", False)
                 # снимаем флаг ml_refit, переключаем на ml_run
                 # НО ВО ВНЕШНЕМ ЦИКЛЕ
 
             if self.ml_predict:
-                pass
-                # TODO: проверяем INCAR
-                # копируем ML_FFN (ML_FF) с прошлого этапа
-                # запускаем
+                ml_ff  = self.ml_input / f"ML_FF_{i}"
+                ml_ffn  = self.ml_input / f"ML_FFN_{i}"
+
+                if ml_ff.is_file():
+                    self.logger.debug(f"{ml_ff} -> {ml_ff_target}")
+                    shutil.copy(ml_ff, ml_ff_target)
+                elif ml_ffn.is_file():
+                    self.logger.debug(f"{ml_ffn} -> {ml_ff_target}")
+                    shutil.copy(ml_ffn, ml_ff_target)
+                
+                if ml_ff.is_file() or ml_ffn.is_file():
+                    incar_file.set("ML_LMLFF", True)
+                    incar_file.set("ML_MODE", "run")
+                else:
+                    self.logger.debug(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
+
             # TODO: брать исходные файлы для ML из input dir (режим predict)
             # TODO: на первой итерации калипсо должен быть полный рандом
             # так что делаем популяцию больше и обучаем на первой итерации
@@ -201,6 +220,8 @@ class VaspJob:
                 error_message = f"Этап {i}: Файл OUTCAR не найден в {step_dir}"
                 self.logger.error(error_message)
                 raise FileNotFoundError(error_message)
+            
+            # TODO: а тут скопировать всё в ml_out (где-то снаружи структур пусть будет, чтобы перезаписывалось)
 
 
 def save_status(status_file: Path, status_data: dict) -> None:
