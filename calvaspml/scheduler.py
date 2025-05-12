@@ -375,6 +375,7 @@ class CalypsoScheduler():
         }
 
         if ml_train:
+            self.logger.debug(f"Планировщик активирует обучение для задачи {task_id}")
             task_config["ml_train"] = "enable"
 
         task_config_file_path = task_path / self.task_config_filename
