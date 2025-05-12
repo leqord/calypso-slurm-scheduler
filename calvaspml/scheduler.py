@@ -137,7 +137,8 @@ class CalypsoScheduler():
                  tasks_dir: Path,
                  input_dir: Path,
                  slurm_config: SlurmConfig,
-                 logger: Logger
+                 logger: Logger,
+                 ml_train_until: int = 0,
                  ):
         self.calypso_exe = calypso_exe.resolve()
         if not self.calypso_exe.is_file():
@@ -173,6 +174,7 @@ class CalypsoScheduler():
         self.task_poscars_subfolder_name = "poscars"
         self.task_slurm_status_filename = "slurm.json"
         self.task_job_prefix = "job_"
+        self.ml_train_until = ml_train_until
         self.loop_sleep_seconds = 300
         self.logger = logger
 
@@ -463,7 +465,7 @@ def main():
     parser.add_argument("--log_file", required=False,
                         default="./scheduler.log",
                         help="Путь к файлу лога")
-    parser.add_argument("--ml_steps", required=False,
+    parser.add_argument("--ml_train_until", required=False,
                         help="Поколения до указанного включительно будут использованы для обучения VASP ML FF,\
                             после указанного обученные ML FF будут использоваться в режиме Fast")
     
@@ -482,6 +484,11 @@ def main():
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
+    
+    ml_train_until = 0
+    if not args.ml_train_until is None:
+        ml_train_until = int(args.ml_train_until)
+        logger.info(f"Подключено машинное обучение VASP до итерации {args.ml_train_until}")
 
     console_formatter = logging.Formatter('[%(asctime)s] %(message)s', 
                                         datefmt='%Y-%m-%d %H:%M:%S')
@@ -502,7 +509,8 @@ def main():
         tasks_dir=Path(args.tasks_dir).resolve(),
         input_dir=Path(args.input_dir).resolve(),
         slurm_config=slurm_config,
-        logger=logger
+        logger=logger,
+        ml_train_until=ml_train_until
     )
 
     scheduler.run()
