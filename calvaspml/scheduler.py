@@ -426,7 +426,11 @@ class CalypsoScheduler():
                 else:
                     self.logger.info(f"Подготовка задния для поколения {current_generation_number}")
                     poscars = self.get_calypso_poscars()
-                    task_path = self.prepare_task_from_poscars(poscars=poscars, task_id=str(current_generation_number))
+
+                    task_path = self.prepare_task_from_poscars(poscars=poscars, 
+                                                               task_id=str(current_generation_number),
+                                                               ml_train=self.ml_train_until <= current_generation_number
+                                                               )
                     self.logger.info(f"Подготовлено задание в {str(task_path)}")
                     continue
 
