@@ -349,7 +349,10 @@ class CalypsoScheduler():
             json.dump({ "current_id": slurm_id}, f)
 
 
-    def prepare_task_from_poscars(self, poscars: List[Path], task_id: str):
+    def prepare_task_from_poscars(self, 
+                                  poscars: List[Path], 
+                                  task_id: str, 
+                                  ml_train: bool = False):
         task_path = self.get_task_path_from_id(task_id)
         task_poscars_path = task_path / self.task_poscars_subfolder_name
 
@@ -370,6 +373,9 @@ class CalypsoScheduler():
             "status_file": str(task_path / self.task_status_filename),
             "job_prefix": self.task_job_prefix
         }
+
+        if ml_train:
+            task_config["ml_train"] = "enable"
 
         task_config_file_path = task_path / self.task_config_filename
 
@@ -510,7 +516,7 @@ def main():
         input_dir=Path(args.input_dir).resolve(),
         slurm_config=slurm_config,
         logger=logger,
-        ml_train_until=ml_train_until
+        ml_train_until=ml_train_until,
     )
 
     scheduler.run()
