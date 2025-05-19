@@ -316,6 +316,7 @@ def main():
         job_workdir = global_work_dir / f"{job_prefix}{identifier}"
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
 
+        # TODO: передавать параметр стартовых файлов или копировать из последней структуры в предыдущем в первую в следующем
         status_data["jobs"][job_key]["workdir"] =  str(job_workdir)
 
         try:
