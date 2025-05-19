@@ -107,7 +107,6 @@ def get_job_status(job_id):
 
 
 
-
 class DuplicateFilter(logging.Filter):
 
     def filter(self, record):
