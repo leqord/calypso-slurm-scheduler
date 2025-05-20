@@ -259,17 +259,18 @@ def main():
         ml_train = str(config.get("ml_train", "")).lower() == "enable"
         ml_refit = str(config.get("ml_refit", "")).lower() == "enable"
         ml_predict = str(config.get("ml_predict", "")).lower() == "enable"
-        ml_input = config.get("ml_input", None)
+        #ml_input = config.get("ml_input", None)
 
     except KeyError as e:
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
     
-    if ml_refit or ml_predict:
-        if ml_input is None or not Path(ml_input).exists():
-            print(f"Опции МО ml_refit/ml_predict включены, но директория ml_input {ml_input} не задана или не существует\
-                  хотя должна содержать входные файлы ML_AB(N)/ML_FF(N)", file=sys.stderr)
-            sys.exit(1)
+    # NOTE: не нужно, всё тасуется в input dir
+    #if ml_refit or ml_predict:
+    #    if ml_input is None or not Path(ml_input).resolve().exists():
+    #        print(f"Опции МО ml_refit/ml_predict включены, но директория ml_input {ml_input} не задана или не существует\
+    #              хотя должна содержать входные файлы ML_AB(N)/ML_FF(N)", file=sys.stderr)
+    #        sys.exit(1)
 
 
     logging.basicConfig(level=logging.INFO,
@@ -322,8 +323,6 @@ def main():
 
         job_workdir = global_work_dir / f"{job_prefix}{identifier}"
         logger.info(f"Запуск задачи {job_key} в каталоге {job_workdir}")
-
-        # TODO: передавать параметр стартовых файлов или копировать из последней структуры в предыдущем в первую в следующем
 
         status_data["jobs"][job_key]["workdir"] =  str(job_workdir)
 
