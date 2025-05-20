@@ -337,6 +337,7 @@ def main():
                           ml_train=ml_train,
                           ml_refit=ml_refit,
                           ml_predict=ml_predict)
+            # можно ли ситуативно делать refit?
             job.run()
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
@@ -345,6 +346,9 @@ def main():
             logger.error(f"Задача {job_key} завершилась с ошибкой: {e}")
             status_data["jobs"][job_key]["status"] = "error"
             status_data["jobs"][job_key]["error"] = str(e)
+        
+        ml_refit = False
+        ml_predict = True
 
         status_data["jobs"][job_key]["timestamp"] = datetime.now().isoformat()
         status_data["jobs"][job_key]["status"] = "success"

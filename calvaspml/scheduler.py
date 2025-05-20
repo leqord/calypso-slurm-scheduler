@@ -428,7 +428,8 @@ class CalypsoScheduler():
 
                     task_path = self.prepare_task_from_poscars(poscars=poscars, 
                                                                task_id=str(current_generation_number),
-                                                               ml_train=self.ml_train_until <= current_generation_number
+                                                               ml_train=self.ml_train_until <= current_generation_number,
+                                                               # TODO: включить refit/predict по триггеру
                                                                )
                     self.logger.info(f"Подготовлено задание в {str(task_path)}")
                     continue
