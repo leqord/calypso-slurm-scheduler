@@ -271,7 +271,7 @@ def main():
 
     
     # NOTE: не нужно, всё тасуется в input dir
-    #if ml_refit or ml_predict:
+    # if ml_refit or ml_predict:
     #    if ml_input is None or not Path(ml_input).resolve().exists():
     #        print(f"Опции МО ml_refit/ml_predict включены, но директория ml_input {ml_input} не задана или не существует\
     #              хотя должна содержать входные файлы ML_AB(N)/ML_FF(N)", file=sys.stderr)
