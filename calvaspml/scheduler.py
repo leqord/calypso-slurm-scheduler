@@ -428,7 +428,7 @@ class CalypsoScheduler():
 
                     task_path = self.prepare_task_from_poscars(poscars=poscars, 
                                                                task_id=str(current_generation_number),
-                                                               ml_train=self.ml_train_until <= current_generation_number,
+                                                               ml_train=self.ml_train_until < current_generation_number,
                                                                # TODO: включить refit/predict по триггеру
                                                                )
                     self.logger.info(f"Подготовлено задание в {str(task_path)}")
@@ -477,7 +477,8 @@ def main():
                         default="./scheduler.log",
                         help="Путь к файлу лога")
     parser.add_argument("--ml_train_until", required=False,
-                        help="Поколения до указанного включительно будут использованы для обучения VASP ML FF,\
+                        help="Поколения с 1 (включительно) до указанного будут использованы для обучения VASP ML FF,\
+                            затем на указанном поколении будет произведён refit и\
                             после указанного обученные ML FF будут использоваться в режиме Fast")
     
     
