@@ -264,6 +264,11 @@ def main():
     except KeyError as e:
         print(f"Отсутствует ключ в конфигурации: {e}", file=sys.stderr)
         sys.exit(1)
+
+    if ml_train is not None or ml_refit is not None or ml_predict is not None:
+        print(f"АКТИВИРОВАНЫ ФУНКЦИИ МАШИННОГО ОБУЧЕНИЯ:\n\
+              ml_train: {ml_train}\nml_refit: {ml_refit}\nml_predict: {ml_predict}")
+
     
     # NOTE: не нужно, всё тасуется в input dir
     #if ml_refit or ml_predict:

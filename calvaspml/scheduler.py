@@ -351,7 +351,9 @@ class CalypsoScheduler():
     def prepare_task_from_poscars(self, 
                                   poscars: List[Path], 
                                   task_id: str, 
-                                  ml_train: bool = False):
+                                  ml_train: bool = False,
+                                  ml_refit: bool = False,
+                                  ml_predict: bool = False):
         task_path = self.get_task_path_from_id(task_id)
         task_poscars_path = task_path / self.task_poscars_subfolder_name
 
