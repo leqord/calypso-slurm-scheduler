@@ -337,7 +337,7 @@ def main():
                           ml_train=ml_train,
                           ml_refit=ml_refit,
                           ml_predict=ml_predict)
-            # можно ли ситуативно делать refit?
+            # NOTE: можно ли ситуативно делать refit?
             job.run()
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
