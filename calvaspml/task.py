@@ -81,14 +81,6 @@ class VaspJob:
         else:
             self.logger.warning(f"Директория входных файлов для MLFF {str(self.ml_input)} не задана или не существует")
 
-        
-        if self.ml_train or self.ml_refit:
-            if not self.ml_ab_files:
-                self.logger.warning(f"Активировано обучение/переобучение MLFF, но нет ни одного ML_AB_* файла в")
-        
-        if self.ml_predict and not self.ml_predict:
-            self.logger.warning(f"Активировано использование обученных MLFF, но нет ни одного ML_FF_* файла в")
-
 
         self.workdir.mkdir(parents=True, exist_ok=True)
         self.logger.info(f"Рабочая директория задачи: {self.workdir}")
