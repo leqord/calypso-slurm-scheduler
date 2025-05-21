@@ -378,6 +378,15 @@ class CalypsoScheduler():
         if ml_train:
             self.logger.debug(f"Планировщик активирует обучение для задачи {task_id}")
             task_config["ml_train"] = "enable"
+        
+        if ml_refit:
+            self.logger.debug(f"Планировщик активирует переобучение для задачи {task_id}")
+            task_config["ml_refit"] = "enable"
+        
+        if ml_predict:
+            self.logger.debug(f"Планировщик активирует предсказание для задачи {task_id}")
+            task_config["ml_predict"] = "enable"
+
 
         task_config_file_path = task_path / self.task_config_filename
 
