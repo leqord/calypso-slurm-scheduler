@@ -180,7 +180,8 @@ class VaspJob:
             log_file_path = step_dir / f"vasp_step_{i}.log"
             with open(log_file_path, "w") as logfile:
                 self.logger.info(f"Этап {i}: запуск команды '{self.task_cmd}' с cwd={step_dir}")
-                result = subprocess.run(self.task_cmd, 
+                result = subprocess.run(f"-c '{self.task_cmd}'",
+                                        executable='/bin/bash',
                                         stdout=logfile, 
                                         stderr=subprocess.STDOUT, 
                                         text=True, 
