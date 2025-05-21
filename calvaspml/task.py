@@ -352,8 +352,9 @@ def main():
             status_data["jobs"][job_key]["status"] = "error"
             status_data["jobs"][job_key]["error"] = str(e)
         
-        ml_refit = False
-        ml_predict = True
+        if ml_refit:
+            ml_refit = False
+            ml_predict = True
 
         status_data["jobs"][job_key]["timestamp"] = datetime.now().isoformat()
         status_data["jobs"][job_key]["status"] = "success"
