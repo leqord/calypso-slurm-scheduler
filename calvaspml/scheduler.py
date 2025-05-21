@@ -408,7 +408,8 @@ class CalypsoScheduler():
             if current_generation_number is not None:
                 possible_current_task_path = self.get_task_path_from_id(str(current_generation_number))
 
-                if possible_current_task_path.is_dir():
+                possible_current_task_config = possible_current_task_path / self.task_config_filename
+                if possible_current_task_config.is_file():
                     self.logger.debug(f"Задание slurm для поколения {str(current_generation_number)} уже существует по пути {possible_current_task_path}")
                     
                     slurm_id = self.get_current_slurm_id_from_id(current_generation_number)
