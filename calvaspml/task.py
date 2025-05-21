@@ -119,7 +119,7 @@ class VaspJob:
                     self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
                     shutil.copy(ml_ab, ml_ab_target)
                 else:
-                    self.logger.debug(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, начинаем с нуля")
+                    self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, начинаем с нуля")
                 
                 incar_file.set("ML_LMLFF", True)
                 incar_file.set("ML_MODE", "train")
@@ -137,7 +137,7 @@ class VaspJob:
                     incar_file.set("ML_LMLFF", True)
                     incar_file.set("ML_MODE", "refit")
                 else:
-                    self.logger.debug(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
+                    self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
                     incar_file.set("ML_LMLFF", False)
                 # NOTE: снимаем флаг ml_refit, переключаем на ml_run НО ВО ВНЕШНЕМ ЦИКЛЕ
 
@@ -156,7 +156,7 @@ class VaspJob:
                     incar_file.set("ML_LMLFF", True)
                     incar_file.set("ML_MODE", "run")
                 else:
-                    self.logger.debug(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
+                    self.logger.warning(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
 
             potcar_src = self.inputdir / "POTCAR"
             potcar_dest = step_dir / "POTCAR"
