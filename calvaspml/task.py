@@ -101,81 +101,84 @@ class VaspJob:
             step_dir.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
 
-            incar_dest = step_dir / "INCAR"
-            shutil.copy(incar_file, incar_dest)
-            self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
+            custom_dest = step_dir / "CUSTOM"
 
-            incar_file = IncarFile(incar_dest)
-            ml_ab  = self.ml_input / f"ML_AB_{i}"
-            ml_abn = self.ml_input / f"ML_ABN_{i}"
-            ml_ab_target = step_dir / "ML_AB"
-            ml_ff_target = step_dir / "ML_FF"
+            if not custom_dest.is_file():
+                incar_dest = step_dir / "INCAR"
+                shutil.copy(incar_file, incar_dest)
+                self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
 
-            if self.ml_train:
-                if ml_abn.is_file():
-                    self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
-                    shutil.copy(ml_abn, ml_ab_target)
-                elif ml_ab.is_file():
-                    self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
-                    shutil.copy(ml_ab, ml_ab_target)
-                else:
-                    self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, начинаем с нуля")
-                
-                incar_file.set("ML_LMLFF", True)
-                incar_file.set("ML_MODE", "train")
-                # NOTE: не забыть добавить параметр, увеличивающий колво референсных структур
+                incar_file = IncarFile(incar_dest)
+                ml_ab  = self.ml_input / f"ML_AB_{i}"
+                ml_abn = self.ml_input / f"ML_ABN_{i}"
+                ml_ab_target = step_dir / "ML_AB"
+                ml_ff_target = step_dir / "ML_FF"
 
-            if self.ml_refit:
-                if ml_abn.is_file():
-                    self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
-                    shutil.copy(ml_abn, ml_ab_target)
-                elif ml_ab.is_file():
-                    self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
-                    shutil.copy(ml_ab, ml_ab_target)
-                
-                if ml_abn.is_file() or ml_ab.is_file():
+                if self.ml_train:
+                    if ml_abn.is_file():
+                        self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
+                        shutil.copy(ml_abn, ml_ab_target)
+                    elif ml_ab.is_file():
+                        self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
+                        shutil.copy(ml_ab, ml_ab_target)
+                    else:
+                        self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, начинаем с нуля")
+                    
                     incar_file.set("ML_LMLFF", True)
-                    incar_file.set("ML_MODE", "refit")
+                    incar_file.set("ML_MODE", "train")
+                    # NOTE: не забыть добавить параметр, увеличивающий колво референсных структур
+
+                if self.ml_refit:
+                    if ml_abn.is_file():
+                        self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
+                        shutil.copy(ml_abn, ml_ab_target)
+                    elif ml_ab.is_file():
+                        self.logger.debug(f"{ml_ab} -> {ml_ab_target}")
+                        shutil.copy(ml_ab, ml_ab_target)
+                    
+                    if ml_abn.is_file() or ml_ab.is_file():
+                        incar_file.set("ML_LMLFF", True)
+                        incar_file.set("ML_MODE", "refit")
+                    else:
+                        self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
+                        incar_file.set("ML_LMLFF", False)
+                    # NOTE: снимаем флаг ml_refit, переключаем на ml_run НО ВО ВНЕШНЕМ ЦИКЛЕ
+
+                if self.ml_predict:
+                    ml_ff  = self.ml_input / f"ML_FF_{i}"
+                    ml_ffn  = self.ml_input / f"ML_FFN_{i}"
+
+                    if ml_ff.is_file():
+                        self.logger.debug(f"{ml_ff} -> {ml_ff_target}")
+                        shutil.copy(ml_ff, ml_ff_target)
+                    elif ml_ffn.is_file():
+                        self.logger.debug(f"{ml_ffn} -> {ml_ff_target}")
+                        shutil.copy(ml_ffn, ml_ff_target)
+                    
+                    if ml_ff.is_file() or ml_ffn.is_file():
+                        incar_file.set("ML_LMLFF", True)
+                        incar_file.set("ML_MODE", "run")
+                    else:
+                        self.logger.warning(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
+
+                potcar_src = self.inputdir / "POTCAR"
+                potcar_dest = step_dir / "POTCAR"
+                shutil.copy(potcar_src, potcar_dest)
+                self.logger.info(f"Этап {i}: POTCAR скопирован в {potcar_dest}")
+
+                poscar_dest = step_dir / "POSCAR"
+                if i == 1:
+                    shutil.copy(self.poscar_original, poscar_dest)
+                    self.logger.info(f"Этап {i}: POSCAR_ORIGINAL скопирован в {poscar_dest}")
                 else:
-                    self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
-                    incar_file.set("ML_LMLFF", False)
-                # NOTE: снимаем флаг ml_refit, переключаем на ml_run НО ВО ВНЕШНЕМ ЦИКЛЕ
-
-            if self.ml_predict:
-                ml_ff  = self.ml_input / f"ML_FF_{i}"
-                ml_ffn  = self.ml_input / f"ML_FFN_{i}"
-
-                if ml_ff.is_file():
-                    self.logger.debug(f"{ml_ff} -> {ml_ff_target}")
-                    shutil.copy(ml_ff, ml_ff_target)
-                elif ml_ffn.is_file():
-                    self.logger.debug(f"{ml_ffn} -> {ml_ff_target}")
-                    shutil.copy(ml_ffn, ml_ff_target)
-                
-                if ml_ff.is_file() or ml_ffn.is_file():
-                    incar_file.set("ML_LMLFF", True)
-                    incar_file.set("ML_MODE", "run")
-                else:
-                    self.logger.warning(f"Нет входного файла ML_FFN_{i}/ML_FF_{i}, этап predict для INCAR_{i} пропущен")
-
-            potcar_src = self.inputdir / "POTCAR"
-            potcar_dest = step_dir / "POTCAR"
-            shutil.copy(potcar_src, potcar_dest)
-            self.logger.info(f"Этап {i}: POTCAR скопирован в {potcar_dest}")
-
-            poscar_dest = step_dir / "POSCAR"
-            if i == 1:
-                shutil.copy(self.poscar_original, poscar_dest)
-                self.logger.info(f"Этап {i}: POSCAR_ORIGINAL скопирован в {poscar_dest}")
-            else:
-                prev_step_dir = self.workdir / f"step_{i-1}"
-                prev_contcar = prev_step_dir / "CONTCAR"
-                if not prev_contcar.is_file():
-                    error_message = f"Этап {i}: Не найден CONTCAR в предыдущем этапе ({prev_contcar})"
-                    self.logger.error(error_message)
-                    raise FileNotFoundError(error_message)
-                shutil.copy(prev_contcar, poscar_dest)
-                self.logger.info(f"Этап {i}: CONTCAR из {prev_contcar} скопирован в {poscar_dest}")
+                    prev_step_dir = self.workdir / f"step_{i-1}"
+                    prev_contcar = prev_step_dir / "CONTCAR"
+                    if not prev_contcar.is_file():
+                        error_message = f"Этап {i}: Не найден CONTCAR в предыдущем этапе ({prev_contcar})"
+                        self.logger.error(error_message)
+                        raise FileNotFoundError(error_message)
+                    shutil.copy(prev_contcar, poscar_dest)
+                    self.logger.info(f"Этап {i}: CONTCAR из {prev_contcar} скопирован в {poscar_dest}")
 
             log_file_path = step_dir / f"vasp_step_{i}.log"
             with open(log_file_path, "w") as logfile:
