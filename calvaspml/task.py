@@ -104,6 +104,9 @@ class VaspJob:
 
             custom_dest = step_dir / "CUSTOM"
 
+            if "SCF" in incar_file.name:
+                self.logger.info(f"Этап {incar_file.name} выполняется БЕЗ машинного обучения.")
+
             if (not custom_dest.is_file()) and (not "SCF" in incar_file.name):
                 incar_dest = step_dir / "INCAR"
                 shutil.copy(incar_file, incar_dest)
