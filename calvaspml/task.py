@@ -97,7 +97,6 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
-
             step_dir = self.workdir / f"step_{i}"
             step_dir.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
@@ -107,7 +106,7 @@ class VaspJob:
             if "SCF" in incar_file.name:
                 self.logger.info(f"Этап {incar_file.name} выполняется БЕЗ машинного обучения.")
 
-            if (not custom_dest.is_file()) and (not "SCF" in incar_file.name):
+            if not custom_dest.is_file():
                 incar_dest = step_dir / "INCAR"
                 shutil.copy(incar_file, incar_dest)
                 self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
@@ -118,7 +117,7 @@ class VaspJob:
                 ml_ab_target = step_dir / "ML_AB"
                 ml_ff_target = step_dir / "ML_FF"
 
-                if self.ml_train:
+                if self.ml_train and not "SCF" in incar_file.name:
                     if ml_abn.is_file():
                         self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
                         shutil.copy(ml_abn, ml_ab_target)
@@ -132,7 +131,7 @@ class VaspJob:
                     incar_file.set("ML_MODE", "train")
                     # NOTE: не забыть добавить параметр, увеличивающий колво референсных структур
 
-                if self.ml_refit:
+                if self.ml_refit and not "SCF" in incar_file.name:
                     if ml_abn.is_file():
                         self.logger.debug(f"{ml_abn} -> {ml_ab_target}")
                         shutil.copy(ml_abn, ml_ab_target)
@@ -146,9 +145,8 @@ class VaspJob:
                     else:
                         self.logger.warning(f"Нет входного файла ML_ABN_{i}/ML_AB_{i}, этап refit для INCAR_{i} пропущен")
                         incar_file.set("ML_LMLFF", False)
-                    # NOTE: снимаем флаг ml_refit, переключаем на ml_run НО ВО ВНЕШНЕМ ЦИКЛЕ
 
-                if self.ml_predict:
+                if self.ml_predict and not "SCF" in incar_file.name:
                     ml_ff  = self.ml_input / f"ML_FF_{i}"
                     ml_ffn  = self.ml_input / f"ML_FFN_{i}"
 
