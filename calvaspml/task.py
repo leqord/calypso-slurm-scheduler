@@ -97,13 +97,14 @@ class VaspJob:
 
     def run(self) -> None:
         for i, incar_file in enumerate(self.incar_files, start=1):
+
             step_dir = self.workdir / f"step_{i}"
             step_dir.mkdir(parents=True, exist_ok=True)
             self.logger.info(f"Создана директория для этапа {i}: {step_dir}")
 
             custom_dest = step_dir / "CUSTOM"
 
-            if not custom_dest.is_file():
+            if (not custom_dest.is_file()) and (not "SCF" in incar_file.name):
                 incar_dest = step_dir / "INCAR"
                 shutil.copy(incar_file, incar_dest)
                 self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
