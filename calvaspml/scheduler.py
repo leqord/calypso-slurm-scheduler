@@ -470,7 +470,9 @@ class CalypsoScheduler():
 def main():
     parser = argparse.ArgumentParser(description="Скрипт-планировщик для работы с Calypso и Slurm")
     parser.add_argument("--command", required=True, 
-                        help="Команда запуска вычислений для структуры")
+                        help="Команда запуска вычислений для структуры") 
+    parser.add_argument("--debug", action='store_true',
+                        help="Режим отладки")
     parser.add_argument("--calypso_exe", required=True, 
                         help="Путь к исполняемому файлу Calypso")
     parser.add_argument("--calypso_workdir", required=False,
