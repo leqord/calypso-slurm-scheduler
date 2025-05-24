@@ -160,7 +160,22 @@ class VaspJob:
                         incar_file.delete("ML_MODE")
                         open(cwd / "CUSTOM", 'a').close()
                         self.logger.warning(f"Завершаю работу задания до дальнеёшего перезапуска планировщиком!")
-                        sys.exit()
+
+                        current_job_slurm_id = os.environ['SLURM_JOB_ID']
+
+                        if current_job_slurm_id is None:
+                            raise Exception(f"Не удалось определить slurm id: не задана переменная окружения SLURM_JOB_ID")
+
+                        params = ["scancel", current_job_slurm_id]
+                        subprocess.run(
+                            params,
+                            capture_output=True, 
+                            text=True, 
+                            check=True,
+                            cwd=cwd,
+                        )
+
+                        sys.exit(1)
 
                         #process.terminate()
                         #process.kill()
