@@ -11,6 +11,9 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 from incar import IncarFile
+import threading
+import time
+
 
 class VaspExecutionError(Exception):
     pass
@@ -26,8 +29,8 @@ class VaspJob:
                  ml_train: bool = False,
                  ml_refit: bool = False,
                  ml_predict: bool = False,
-                 ml_input: Path = None,
-                 ml_output: Path = None,
+                 ml_input: Path | None = None,
+                 ml_output: Path | None = None,
                  ):
         self.logger = logger
         self.task_cmd = task_cmd
@@ -61,10 +64,11 @@ class VaspJob:
             self.ml_predict = ml_predict
 
 
-        self.ml_input: Path = ml_input.resolve() if ml_input is not None else None
-        self.ml_output: Path = ml_output.resolve() if ml_output is not None else None
+        self.ml_input = ml_input.resolve() if ml_input is not None else None
+        self.ml_output = ml_output.resolve() if ml_output is not None else None
 
-        self.ml_output.mkdir(parents=True, exist_ok=True)
+        if self.ml_output is not None:
+            self.ml_output.mkdir(parents=True, exist_ok=True)
         
         self.ml_ab_files = []
         self.ml_ff_files = []
@@ -93,6 +97,55 @@ class VaspJob:
     def configure_incar_for_ml(self) -> None:
         self.logger.debug(f"Конфигурирую INCAR для включения MLFF")
         return None
+    
+
+    def monitor_and_restart(self, 
+                            cmd, 
+                            log_file_path, 
+                            cwd,
+                            incar_file: IncarFile,
+                            timeout=300, 
+                            check_string="entering main loop",
+                            ):
+        while True:
+            self.logger.info(f"Running '{cmd}' in cwd={cwd}")
+            with open(log_file_path, "w") as logfile:
+                process = subprocess.Popen(cmd,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT,
+                                        text=True,
+                                        cwd=cwd,
+                                        bufsize=1,
+                                        universal_newlines=True)
+
+                start_time = time.time()
+                found_check_string = False
+
+                def reader():
+                    nonlocal found_check_string
+                    for line in process.stdout:
+                        logfile.write(line)
+                        logfile.flush()
+                        if check_string in line:
+                            found_check_string = True
+
+                thread = threading.Thread(target=reader)
+                thread.start()
+
+                while True:
+                    time.sleep(10)
+                    elapsed = time.time() - start_time
+
+                    if process.poll() is not None:
+                        thread.join()
+                        return process.returncode
+
+                    if elapsed > timeout and not found_check_string:
+                        self.logger.warning(f"Timeout {timeout}s reached, restarting...")
+                        incar_file.set("ML_LMLFF", False)
+                        process.kill()
+                        thread.join()
+                        break 
 
 
     def run(self) -> None:
@@ -103,12 +156,12 @@ class VaspJob:
 
             custom_dest = step_dir / "CUSTOM"
             incar_name = incar_file.name
+            incar_dest = step_dir / "INCAR"
 
             if "SCF" in incar_file.name:
                 self.logger.info(f"Этап {incar_file.name} выполняется БЕЗ машинного обучения.")
 
             if not custom_dest.is_file():
-                incar_dest = step_dir / "INCAR"
                 shutil.copy(incar_file, incar_dest)
                 self.logger.info(f"Этап {i}: {incar_file.name} скопирован в {incar_dest}")
 
@@ -184,16 +237,17 @@ class VaspJob:
                     self.logger.info(f"Этап {i}: CONTCAR из {prev_contcar} скопирован в {poscar_dest}")
 
             log_file_path = step_dir / f"vasp_step_{i}.log"
-            with open(log_file_path, "w") as logfile:
-                self.logger.info(f"Этап {i}: запуск команды '{self.task_cmd}' с cwd={step_dir}")
-                result = subprocess.run(self.task_cmd,
-                                        stdout=logfile, 
-                                        stderr=subprocess.STDOUT, 
-                                        text=True, 
-                                        cwd=step_dir,
-                                        )
+
+            self.logger.info(f"Этап {i}: запуск команды '{self.task_cmd}' с cwd={step_dir}")
+            returncode = self.monitor_and_restart(
+                self.task_cmd,
+                log_file_path,
+                step_dir,
+                IncarFile(incar_dest),
+                300,
+            )
             
-            if result.returncode != 0:
+            if returncode != 0:
                 error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path} и OUTCAR"
                 self.logger.error(error_message)
 
