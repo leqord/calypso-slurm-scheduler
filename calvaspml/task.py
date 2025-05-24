@@ -132,7 +132,7 @@ class VaspJob:
                 thread.start()
 
                 while True:
-                    time.sleep(1)
+                    time.sleep(5)
                     elapsed = time.time() - start_time
 
                     if process.poll() is not None:
@@ -151,7 +151,7 @@ class VaspJob:
                         # NOTE: какой безобразный ужас...
                         break 
                 
-                logfile.flush()
+                    logfile.flush()
 
 
     def run(self) -> None:
