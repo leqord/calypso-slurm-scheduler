@@ -125,7 +125,6 @@ class VaspJob:
                     nonlocal found_check_string
                     for line in process.stdout:
                         logfile.write(line)
-                        logfile.flush()
                         if check_string in line:
                             found_check_string = True
 
@@ -151,6 +150,8 @@ class VaspJob:
                         process.wait() 
                         # NOTE: какой безобразный ужас...
                         break 
+                
+                logfile.flush()
 
 
     def run(self) -> None:
