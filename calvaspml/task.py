@@ -166,6 +166,7 @@ class VaspJob:
                         if current_job_slurm_id is None:
                             raise Exception(f"Не удалось определить slurm id: не задана переменная окружения SLURM_JOB_ID")
 
+                        self.logger.warning(f"Пытаюсь завершить задание {current_job_slurm_id}...")
                         params = ["scancel", current_job_slurm_id]
                         subprocess.run(
                             params,
