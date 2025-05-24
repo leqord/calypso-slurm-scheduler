@@ -29,8 +29,8 @@ class VaspJob:
                  ml_train: bool = False,
                  ml_refit: bool = False,
                  ml_predict: bool = False,
-                 ml_input: Path | None = None,
-                 ml_output: Path | None = None,
+                 ml_input: Path = None,
+                 ml_output: Path = None,
                  ):
         self.logger = logger
         self.task_cmd = task_cmd
