@@ -422,8 +422,8 @@ def main():
         except VaspExecutionError as e:
             logger.warning(f"Задача {job_key} столкнулась с проблемой на стороне VASP: {e}, дальнейшие шаги релаксации пропущены")
             status_data["jobs"][job_key]["warning"] = str(e)
-        except Exception as e:
-            logger.error(f"Задача {job_key} завершилась с ошибкой: {e}")
+        except FileNotFoundError as e:
+            logger.error(f"Задача {job_key} столкнулась с ошибкой: {e}")
             status_data["jobs"][job_key]["status"] = "error"
             status_data["jobs"][job_key]["error"] = str(e)
         
