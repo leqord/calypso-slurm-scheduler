@@ -148,7 +148,8 @@ class VaspJob:
                         process.terminate()
                         process.kill()
                         thread.join(10)
-                        process.wait()
+                        process.wait() 
+                        # NOTE: какой безобразный ужас...
                         break 
 
 
