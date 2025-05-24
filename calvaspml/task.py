@@ -133,7 +133,7 @@ class VaspJob:
                 thread.start()
 
                 while True:
-                    time.sleep(10)
+                    time.sleep(1)
                     elapsed = time.time() - start_time
 
                     if process.poll() is not None:
