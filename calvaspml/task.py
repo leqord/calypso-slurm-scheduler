@@ -143,8 +143,8 @@ class VaspJob:
 
                     if elapsed > timeout and not found_check_string:
                         self.logger.warning(f"Таймаут {timeout}с достигнут, перезапуск с отлюченным МО...")
-                        incar_file.delete("ML_LMLFF")
-                        incar_file.delete("ML_MODE")
+                        incar_file.set("ML_LMLFF", False)
+                        #incar_file.delete("ML_MODE")
                         process.terminate()
                         process.kill()
                         thread.join(10)
@@ -249,7 +249,7 @@ class VaspJob:
                 log_file_path,
                 step_dir,
                 IncarFile(incar_dest),
-                30,
+                300,
             )
             
             if returncode != 0:
