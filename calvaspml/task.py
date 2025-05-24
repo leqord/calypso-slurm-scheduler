@@ -105,13 +105,12 @@ class VaspJob:
                             cwd,
                             incar_file: IncarFile,
                             timeout=300, 
-                            check_string="entering main loop",
+                            check_string="starting setup",
                             ):
-        while True:
-            self.logger.info(f"Running '{cmd}' in cwd={cwd}")
+        for i in range(3):
+            self.logger.info(f"Запуск '{cmd}' в cwd={cwd}, попытка {i}")
             with open(log_file_path, "w") as logfile:
                 process = subprocess.Popen(cmd,
-                                        stdin=subprocess.DEVNULL,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT,
                                         text=True,
@@ -143,7 +142,8 @@ class VaspJob:
 
                     if elapsed > timeout and not found_check_string:
                         self.logger.warning(f"Таймаут {timeout}с достигнут, перезапуск с отлюченным МО...")
-                        incar_file.set("ML_LMLFF", False)
+                        incar_file.delete("ML_LMLFF")
+                        incar_file.delete("ML_MODE")
                         #incar_file.delete("ML_MODE")
                         process.terminate()
                         process.kill()
