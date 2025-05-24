@@ -272,7 +272,7 @@ class VaspJob:
             )
             
             if returncode != 0:
-                error_message = f"Этап {i} завершился с ошибкой. Код: {result.returncode}. Проверьте лог: {log_file_path} и OUTCAR"
+                error_message = f"Этап {i} завершился с ошибкой. Код: {returncode}. Проверьте лог: {log_file_path} и OUTCAR"
                 self.logger.error(error_message)
 
                 raise VaspExecutionError(error_message)
