@@ -13,6 +13,8 @@ from datetime import datetime
 from incar import IncarFile
 import threading
 import time
+import os
+import sys
 
 
 class VaspExecutionError(Exception):
@@ -107,6 +109,11 @@ class VaspJob:
                             timeout=300, 
                             check_string="starting setup",
                             ):
+        ml_enabled = incar_file.get("ML_LMLFF", False)
+
+        if ml_enabled:
+            self.logger.info(f"Машинное обучение подключено для этапа {i}, наблюдаю за ходом задачи...")
+
         for i in range(3):
             self.logger.info(f"Запуск '{cmd}' в cwd={cwd}, попытка {i}")
             with open(log_file_path, "w") as logfile:
@@ -127,9 +134,17 @@ class VaspJob:
                         logfile.write(line)
                         if check_string in line:
                             found_check_string = True
+                        logfile.flush()
 
                 thread = threading.Thread(target=reader)
                 thread.start()
+
+                if not ml_enabled:
+                    self.logger.info(f"Ожидаю задачу...")
+                    returncode = process.wait()
+                    thread.join()
+                    return returncode
+
 
                 while True:
                     time.sleep(5)
@@ -140,18 +155,21 @@ class VaspJob:
                         return process.returncode
 
                     if elapsed > timeout and not found_check_string:
-                        self.logger.warning(f"Таймаут {timeout}с достигнут, перезапуск с отлюченным МО...")
+                        self.logger.warning(f"Таймаут {timeout}с достигнут, отключение МО и переход задачи в нестандартный режим...")
                         incar_file.delete("ML_LMLFF")
                         incar_file.delete("ML_MODE")
-                        #incar_file.delete("ML_MODE")
-                        process.terminate()
-                        process.kill()
-                        thread.join(10)
-                        process.wait() 
+                        open(cwd / "CUSTOM", 'a').close()
+                        self.logger.warning(f"Завершаю работу задания до дальнеёшего перезапуска планировщиком!")
+                        sys.exit()
+
+                        #process.terminate()
+                        #process.kill()
+                        #thread.join(10)
+                        #process.wait() 
                         # NOTE: какой безобразный ужас...
                         break 
                 
-                    logfile.flush()
+                    
 
 
     def run(self) -> None:
