@@ -141,7 +141,7 @@ class VaspJob:
                         return process.returncode
 
                     if elapsed > timeout and not found_check_string:
-                        self.logger.warning(f"Timeout {timeout}s reached, restarting...")
+                        self.logger.warning(f"Таймаут {timeout}с достигнут, перезапуск с отлюченным МО...")
                         incar_file.set("ML_LMLFF", False)
                         process.kill()
                         thread.join()
