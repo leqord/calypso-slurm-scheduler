@@ -289,10 +289,10 @@ class VaspJob:
             ml_abn_out = step_dir / "ML_ABN"
             ml_ffn_out = step_dir / "ML_FFN"
 
-            if ml_abn_out.is_file():
+            if ml_abn_out.is_file() and self.ml_output is not None:
                 shutil.copy(ml_abn_out, self.ml_output / f"ML_ABN_{i}")
             
-            if ml_ffn_out.is_file():
+            if ml_ffn_out.is_file() and self.ml_output is not None:
                 shutil.copy(ml_ffn_out, self.ml_output / f"ML_FFN_{i}")
 
 
