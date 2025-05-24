@@ -112,7 +112,7 @@ class VaspJob:
         ml_enabled = incar_file.get("ML_LMLFF", False)
 
         if ml_enabled:
-            self.logger.info(f"Машинное обучение подключено для этапа {i}, наблюдаю за ходом задачи...")
+            self.logger.info(f"Машинное обучение подключено, наблюдаю за ходом задачи...")
 
         for i in range(3):
             self.logger.info(f"Запуск '{cmd}' в cwd={cwd}, попытка {i}")
