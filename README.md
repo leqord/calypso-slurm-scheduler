@@ -21,7 +21,7 @@
 ```Bash
 mkdir -p ~/miniconda3 && wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh && bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3 && rm -rf ~/miniconda3/miniconda.sh && ~/miniconda3/bin/conda init bash && source ~/.bashrc && conda create -n "calypso" python=3.8 && conda install --name calypso matplotlib spglib pymatgen
 ```
-3. Клонировать репозиторий gir с планировщиком куда-либо:
+3. Клонировать репозиторий git с планировщиком куда-либо:
 ```Bash
 git clone  https://github.com/leqord/calypso-slurm-scheduler
 ```
